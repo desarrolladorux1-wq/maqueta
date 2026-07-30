@@ -1,0 +1,1960 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programa Fotovoltaico · SatControl</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    :root{
+      --bg:#09101f;--side:#071023;--top:#17233f;--panel:#17233f;--panel2:#0d1630;--border:#293b67;
+      --text:#f8fbff;--muted:#93a4c7;--cyan:#22d3ee;--cyan2:#1b6f8a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden}
+    button,input,select{font:inherit}button{cursor:pointer}
+    ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#0b1328}::-webkit-scrollbar-thumb{background:#1b6f8a;border-radius:999px}
+    .app{height:100vh;display:grid;grid-template-columns:280px 1fr;transition:.25s ease}
+    .app.sidebar-hidden{grid-template-columns:0 1fr}
+    .sidebar{background:var(--side);border-right:1px solid #1f3156;display:flex;flex-direction:column;min-height:0;box-shadow:20px 0 45px #0006;z-index:20;overflow:hidden;transition:.25s ease}
+    .app.sidebar-hidden .sidebar{width:0;opacity:0;border-right:0}
+    .logo{padding:24px 20px 16px;text-align:center}.logo-img{display:block;width:112px;max-width:100%;height:auto;margin:0 auto 12px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));border-radius:0;background:transparent;padding:0}.brand{display:none}.brand-sub{font-size:11px;color:#94a3b8;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .nav{padding:10px 15px;overflow:auto;flex:1}.nav button,.bottom button{width:100%;border:0;background:transparent;color:#dbe8ff;padding:12px 14px;border-radius:14px;font-weight:850;text-align:left;display:flex;gap:12px;align-items:center}.nav button:hover,.nav button.active{background:#1c2745}.nav .ico,.bottom .ico{width:26px;text-align:center}.subnav{margin:5px 0 12px 40px;color:#afc0de;font-size:13px;font-weight:700}.subnav div{padding:8px;border-radius:10px}.subnav div.active,.subnav div:hover{background:#0e749033;color:#e0f2fe;border-left:1px solid #22d3ee}.bottom{border-top:1px solid #ffffff22;padding:14px}.bottom .logout{background:#101a33;color:#ff8585}
+    .main{min-width:0;display:grid;grid-template-rows:68px 1fr;height:100vh;min-height:0}
+    .topbar{background:var(--top);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-start;padding:0 18px 0 14px;gap:10px;z-index:10}.topbar h1{font-size:15px;margin:0;font-weight:950;letter-spacing:.01em}.top-actions{display:flex;align-items:center;gap:12px}.top-actions.metrics{margin-left:auto}.title-block{display:flex;align-items:center;min-width:0}.pill-top{border:1px solid var(--border);background:#0d1630;border-radius:18px;padding:10px 12px;font-size:12px;font-weight:900}.pill-top b{color:#a5f3fc}
+    .content{position:relative;height:calc(100vh - 68px);min-height:0;display:grid;grid-template-columns:320px minmax(480px,1fr) 380px;gap:18px;padding:18px;overflow:hidden;transition:.25s ease}
+    .content.left-hidden{grid-template-columns:0 minmax(480px,1fr) 380px}
+    .content.right-hidden{grid-template-columns:320px minmax(480px,1fr) 0}
+    .content.left-hidden.right-hidden{grid-template-columns:0 minmax(480px,1fr) 0}
+    .card{border:1px solid var(--border);border-radius:22px;background:var(--panel);box-shadow:0 20px 60px #0005;overflow:hidden;min-height:0;transition:.25s ease}
+    .content.left-hidden .left-panel,.content.right-hidden .right-panel{width:0;opacity:0;border:0;padding:0;overflow:hidden}
+    .left-panel{display:flex;flex-direction:column}.panel-head{padding:17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-head h2{margin:0;font-size:17px;font-weight:950}.panel-actions{display:flex;align-items:center;gap:10px}.toggle-btn{border:1px solid #334155;background:#111a31;color:#e0f2fe;border-radius:9px;width:30px;height:30px;display:grid;place-items:center;font-size:18px;font-weight:950;line-height:1;box-shadow:0 8px 18px rgba(0,0,0,.22);cursor:pointer}.toggle-btn:hover{background:#1b6f8a;color:#fff;border-color:#38bdf8}.search{padding:14px 16px 10px}.search input,.search select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:#0d1630;color:#fff;font-weight:750;outline:none}.stack{display:grid;gap:10px;padding:0 16px 16px;overflow:auto}
+    .mini{border:1px solid #ffffff18;background:var(--panel2);border-radius:18px;padding:12px}.mini h3{margin:0 0 10px;font-size:14px;color:#e0f2fe}.mini p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.35;font-weight:800}.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kpi{border:1px solid #ffffff16;background:#111a31;border-radius:13px;padding:9px}.kpi span{display:block;color:#93a4c7;font-size:10px;font-weight:900}.kpi b{display:block;margin-top:3px;color:#fff;font-size:18px;font-weight:950}.utils-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.util-btn{border:1px solid #293b67;background:#111a31;color:#dbeafe;border-radius:13px;padding:10px 8px;font-size:11px;font-weight:900}.util-btn.active,.util-btn:hover{background:#0e749033;border-color:#22d3ee;color:#ecfeff}.util-btn.icon-only{height:52px;display:grid;place-items:center;padding:0}.util-ico{display:inline-flex;align-items:center;justify-content:center}.util-svg{width:24px;height:24px;stroke:#dbeafe;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.util-btn.active .util-svg,.util-btn:hover .util-svg{stroke:#ecfeff}.util-svg.fill-accent{fill:#dbeafe;stroke:none}.circle-actions .util-btn{height:auto;padding:10px 8px}.selection-badge{border-radius:999px;background:#0e749033;color:#a5f3fc;padding:4px 8px;font-size:10px;font-weight:950}.circle-config{display:none;margin-top:12px;border:1px solid #22d3ee44;background:#0d1630;border-radius:16px;padding:12px}.circle-config.open{display:block}.circle-config-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.circle-config-top b{font-size:12px;color:#e0f2fe}.radius-value{font-size:12px;font-weight:950;color:#67e8f9}.radius-slider{width:100%;margin:12px 0 8px;accent-color:#22d3ee}.circle-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tiny-note{font-size:10px;color:#93a4c7;font-weight:800;line-height:1.35}.center-marker{width:18px;height:18px;border-radius:50%;background:#22d3ee;border:3px solid #fff;box-shadow:0 0 0 4px rgba(34,211,238,.28),0 4px 12px rgba(0,0,0,.35);position:relative}.center-marker:before,.center-marker:after{content:'';position:absolute;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)}.center-marker:before{width:2px;height:18px}.center-marker:after{width:18px;height:2px}
+    .story{border:1px solid #ffffff16;background:#111a31;border-radius:14px;padding:10px}.story b{display:block;color:#fff;font-size:12px}.story span{display:block;color:#94a3b8;font-size:10px;font-weight:800;line-height:1.3;margin-top:4px}
+    .btn{border:0;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:950;color:#fff;background:var(--cyan2)}.btn.dark{background:#111a31;border:1px solid var(--border)}
+    .map-wrap{position:relative;min-height:0}.map-shell{height:100%;position:relative;overflow:hidden;border:1px solid #334155;border-radius:24px;background:#0b1328;box-shadow:0 22px 60px #0007}.leaflet-container{height:100%;width:100%;font:inherit;background:#0b1328}.leaflet-control-zoom{margin-right:14px!important;margin-bottom:14px!important}.leaflet-control-attribution{background:#ffffffd8!important;color:#1f2937!important;border-radius:8px 0 0 0!important;font-weight:750}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#111a31;color:#e2e8f0;border:1px solid #334155}.leaflet-popup-content{font-weight:750}.map-side-toggle{position:absolute;top:18px;z-index:720;width:30px;height:30px;border:1px solid #334155;background:#111a31;color:#e0f2fe;border-radius:9px;display:none;place-items:center;font-size:18px;font-weight:950;line-height:1;box-shadow:0 8px 18px rgba(0,0,0,.24);cursor:pointer}.map-side-toggle:hover{background:#1b6f8a;color:#fff;border-color:#38bdf8}.map-side-toggle.left{left:12px}.map-side-toggle.right{right:12px}.content.left-hidden .map-side-toggle.left,.content.right-hidden .map-side-toggle.right{display:grid}
+    .gis-toolbar{position:absolute;left:18px;top:18px;z-index:700;display:flex;gap:10px;flex-wrap:wrap;max-width:62%}.ge-btn{width:42px;height:42px;border:none;border-radius:12px;background:rgba(255,255,255,.96);color:#334155;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px);transition:all .18s ease;padding:0;font-weight:950}.ge-action-btn{min-width:88px;height:42px;border:none;border-radius:12px;background:rgba(255,255,255,.96);color:#334155;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px);transition:all .18s ease;padding:0 14px;font-weight:950;font-size:12px}.ge-btn svg,.ge-action-btn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}.ge-btn svg .fill-current,.ge-action-btn svg .fill-current{fill:currentColor;stroke:none}.ge-btn:hover,.ge-action-btn:hover{transform:translateY(-1px);background:#ffffff;color:#0f172a;box-shadow:0 4px 12px rgba(0,0,0,.18),0 14px 28px rgba(0,0,0,.16)}.ge-btn.active,.ge-action-btn.active{background:#0ea5e9;color:#ffffff}.info-chip{position:absolute;left:18px;bottom:18px;z-index:700;max-width:430px;background:#09101fdc;border:1px solid #334155;border-radius:16px;padding:10px 13px;color:#e2e8f0;font-size:11px;font-weight:950;box-shadow:0 8px 24px rgba(0,0,0,.24);backdrop-filter:blur(8px)}
+    .map-search{position:absolute;right:18px;top:18px;z-index:700;width:270px;background:rgba(255,255,255,.96);border:1px solid rgba(203,213,225,.95);border-radius:14px;padding:7px 8px;box-shadow:0 2px 7px rgba(0,0,0,.14),0 8px 20px rgba(0,0,0,.11);color:#0f172a}.map-search-row{display:grid;grid-template-columns:1fr 32px;gap:6px;align-items:center}.map-search input{height:31px;border:1px solid #e2e8f0;background:#f8fafc;color:#0f172a;border-radius:10px;padding:0 9px;font-size:10.5px;font-weight:900;outline:none}.map-search button{height:31px;border:0;border-radius:10px;background:#0ea5e9;color:#fff;font-weight:950}.map-search small{display:block;margin:4px 0 0 2px;color:#64748b;font-size:8px;font-weight:850}
+    .right-panel{display:flex;flex-direction:column;padding:14px;overflow:auto}.title-box{border:1px solid #22d3ee55;border-radius:22px;text-align:center;padding:14px;position:relative}.title-box h2{margin:0;font-size:18px}.title-box p{margin:4px 0 0;color:#cbd5e1;font-size:12px;font-weight:800}.right-hide-btn{position:absolute;top:12px;right:12px}
+    .sat-panel-toggle{position:absolute;top:50%;z-index:1200;width:40px;height:58px;border-radius:10px;border:1px solid rgba(34,211,238,.34);background:rgba(7,16,35,.90);color:#a5f3fc;display:grid;place-items:center;box-shadow:0 16px 40px rgba(0,0,0,.34);backdrop-filter:blur(12px);cursor:pointer;transform:translateY(-50%);pointer-events:auto;transition:left .25s ease,right .25s ease,background .18s ease,border-color .18s ease,transform .18s ease}
+    .sat-panel-toggle:hover{background:#10213f;border-color:rgba(103,232,249,.72);transform:translateY(-50%) scale(1.03)}
+    .sat-panel-toggle::before{content:"";width:11px;height:11px;border-top:3px solid currentColor;border-right:3px solid currentColor}
+    .sat-left-toggle{left:calc(18px + 320px - 10px)}
+    .sat-right-toggle{right:calc(18px + 380px - 10px)}
+    .sat-left-toggle::before{transform:rotate(225deg)}
+    .sat-right-toggle::before{transform:rotate(45deg)}
+    .content.left-hidden .sat-left-toggle{left:12px;background:rgba(14,165,233,.92);color:#fff;border-color:rgba(255,255,255,.35)}
+    .content.left-hidden .sat-left-toggle::before{transform:rotate(45deg)}
+    .content.right-hidden .sat-right-toggle{right:12px;background:rgba(14,165,233,.92);color:#fff;border-color:rgba(255,255,255,.35)}
+    .content.right-hidden .sat-right-toggle::before{transform:rotate(225deg)}
+    .integrated-mode #hideLeftPanelBtn,.integrated-mode #hideRightPanelBtn,.integrated-mode #showLeftPanelBtn,.integrated-mode #showRightPanelBtn,.integrated-mode .map-side-toggle{display:none!important;pointer-events:none!important}
+    .details-grid{display:grid;gap:7px}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #ffffff12;padding-bottom:7px;font-size:11px;font-weight:850}
+    .detail-row:last-child{border-bottom:0;padding-bottom:0}
+    .detail-row span{color:#93a4c7;flex-shrink:0}
+    .detail-row b{text-align:right;color:#fff}
+    button.foto-status-toggle-btn,.detail-row .foto-status-toggle-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;border-radius:999px!important;padding:7px 14px!important;font-size:10px!important;font-weight:950!important;cursor:pointer!important;font-family:inherit!important;margin-left:auto!important;flex-shrink:0!important;appearance:none!important;-webkit-appearance:none!important;line-height:1!important;min-width:92px!important;box-shadow:0 4px 14px rgba(0,0,0,.22)!important;transition:filter .15s ease,transform .15s ease!important}
+    button.foto-status-toggle-btn.ok,button.foto-status-toggle-btn.b-ok{background:#10b98144!important;color:#bbf7d0!important;border:1px solid #22c55e!important}
+    button.foto-status-toggle-btn.off,button.foto-status-toggle-btn.b-off{background:#ef444444!important;color:#fecaca!important;border:1px solid #ef4444!important}
+    button.foto-status-toggle-btn:hover{filter:brightness(1.12)!important;transform:translateY(-1px)!important}
+    button.foto-status-toggle-btn:active{transform:translateY(0)!important}
+    button.foto-status-toggle-btn .foto-status-ico{font-size:11px;line-height:1;opacity:.9}
+    .photo-wrap{margin-top:12px;border:1px solid #475569;border-radius:18px;overflow:hidden;background:#0b1328}.photo-wrap img{display:block;width:100%;height:220px;object-fit:cover}.photo-caption{padding:10px 12px;border-top:1px solid #293b67;color:#cbd5e1;font-size:11px;font-weight:800}.legend{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950}.b-ok{background:#10b98122;color:#86efac}.b-warn{background:#f59e0b22;color:#fde68a}.b-off{background:#ef444422;color:#fecaca}.evidence-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.evidence-head small{display:block;color:#93a4c7;font-size:10px;font-weight:900}.thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.thumb-card{border:1px solid #334155;background:#0b1328;border-radius:14px;overflow:hidden}.thumb-card img{display:block;width:100%;height:76px;object-fit:cover}.thumb-card span{display:block;padding:7px 8px;color:#e2e8f0;font-size:10px;font-weight:900}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.summary-kpi{border:1px solid #ffffff16;background:#111a31;border-radius:13px;padding:10px}.summary-kpi span{display:block;color:#93a4c7;font-size:10px;font-weight:900}.summary-kpi b{display:block;margin-top:4px;color:#fff;font-size:22px;font-weight:950}.summary-total{margin-top:10px;border:1px solid #0ea5e955;background:#0d1630;border-radius:14px;padding:10px 12px}.summary-total-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;color:#dbeafe;font-size:12px;font-weight:900;border-bottom:1px solid #ffffff12}.summary-total-row:last-child{border-bottom:0}.progress-list{display:grid;gap:8px;margin-top:12px}.progress-row{display:grid;grid-template-columns:95px 1fr 26px;gap:10px;align-items:center;color:#cbd5e1;font-size:11px;font-weight:900}.progress-track{height:10px;background:#1e293b;border-radius:999px;overflow:hidden}.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#31c48d)}.circle-hint{font-size:11px;color:#a5f3fc;font-weight:900;line-height:1.35;margin-top:8px}.selection-badge{border-radius:999px;background:#0e749033;color:#a5f3fc;padding:4px 8px;font-size:10px;font-weight:950} .leaflet-interactive.selection-ring{stroke:#22d3ee;stroke-width:2.5;fill:#22d3ee;fill-opacity:.08;stroke-dasharray:10 6}
+    .foto-menu{display:block;position:relative}.foto-menu summary{list-style:none}.foto-menu summary::-webkit-details-marker{display:none}.foto-menu[open]>summary,.foto-menu:focus-within>summary{background:#0ea5e9;color:#fff}.floating-panel{position:absolute;left:0;top:52px;z-index:900;width:310px;background:rgba(255,255,255,.97);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;display:none;color:#0f172a;max-height:420px;overflow:auto}.floating-panel.open,.foto-menu[open]>.floating-panel,.foto-menu:focus-within>.floating-panel{display:grid;gap:10px}.floating-title{font-size:12px;font-weight:950;color:#0f172a}.layer-option{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;font-weight:850;color:#334155;cursor:pointer}.layer-option input{accent-color:#0ea5e9}.foto-map-option{width:100%;justify-content:flex-start}.foto-map-option.active{background:#dbeafe;border-color:#38bdf8;color:#075985}.hint{font-size:10px;color:#64748b;font-weight:800;line-height:1.35}
+    .pin-marker{width:18px;height:18px;background:#ef4444;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 6px 16px rgba(0,0,0,.35)}.pin-marker:after{content:'';position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}.pin-modal{position:fixed;inset:0;background:rgba(2,6,23,.68);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;padding:24px}.pin-modal.open{display:flex}.pin-modal-card{width:min(760px,96vw);max-height:92vh;overflow:auto;border:1px solid #334155;border-radius:22px;background:#0f172a;box-shadow:0 24px 70px rgba(0,0,0,.45);padding:20px}.pin-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.pin-modal-head h2{margin:0;color:#fff;font-size:22px}.pin-modal-head p{margin:6px 0 0;color:#93a4c7;font-size:12px;font-weight:800;line-height:1.35}.pin-close{border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;width:38px;height:38px;font-size:22px;line-height:1}.pin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pin-field{display:grid;gap:6px}.pin-field.full{grid-column:1/-1}.pin-field label{color:#cbd5e1;font-size:11px;font-weight:900}.pin-field input,.pin-field select,.pin-field textarea{width:100%;border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;outline:none}.pin-field textarea{min-height:82px;resize:vertical}.pin-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:16px}.pin-status{color:#67e8f9;font-size:12px;font-weight:900}.pin-btns{display:flex;gap:10px;flex-wrap:wrap}.pin-btn{border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:900}.pin-btn.success{background:#0f766e;border-color:#0f766e}.tiny-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 8px;background:#0e749033;color:#a5f3fc;font-size:10px;font-weight:950}
+    .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%}.sd-ok{background:#22c55e}.sd-warn{background:#f59e0b}.sd-off{background:#ef4444}
+    .panel-icon-marker{width:14px;height:10px;border:1.5px solid #fff;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+    .foto-evidence-viewer{margin-top:12px;border:1px solid #334155;border-radius:20px;overflow:hidden;background:#0b1328;box-shadow:0 12px 32px rgba(0,0,0,.28)}.foto-evidence-stage{position:relative;background:#020617}.foto-evidence-stage img{display:block;width:100%;height:260px;object-fit:cover;object-position:center 42%;transition:transform .35s ease;background:#0f172a}.foto-evidence-viewer:hover .foto-evidence-stage img{transform:scale(1.03)}.foto-evidence-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,23,.08) 0%,rgba(2,6,23,.55) 100%);pointer-events:none;display:flex;align-items:flex-end;padding:12px}.foto-evidence-tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:rgba(15,23,42,.82);border:1px solid rgba(56,189,248,.35);color:#e0f2fe;font-size:10px;font-weight:950;backdrop-filter:blur(8px)}.foto-evidence-toolbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.foto-evidence-toolbar .btn{padding:9px 12px;font-size:11px;border-radius:12px}.foto-evidence-photos{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}.foto-evidence-photos::-webkit-scrollbar{height:6px}.foto-evidence-photos::-webkit-scrollbar-thumb{background:#334155;border-radius:999px}.foto-evidence-thumb{flex:0 0 92px;width:92px;border:2px solid transparent;background:#111a31;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;text-align:left;scroll-snap-align:start;transition:border-color .18s ease,transform .18s ease}.foto-evidence-thumb:hover,.foto-evidence-thumb.active{border-color:#22d3ee;transform:translateY(-1px)}.foto-evidence-thumb img{display:block;width:100%;height:68px;object-fit:cover}.foto-evidence-thumb span{display:block;padding:6px 7px;color:#cbd5e1;font-size:9px;font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.foto-evidence-slot{flex:0 0 92px;width:92px;min-height:92px;border:1px dashed #475569;border-radius:14px;background:#0f172a;display:grid;place-items:center;gap:2px;color:#94a3b8;cursor:pointer;scroll-snap-align:start}.foto-evidence-slot span{font-size:22px;line-height:1}.foto-evidence-slot small{font-size:9px;font-weight:900;color:#64748b}.foto-evidence-slot input{display:none!important}
+    .foto-report-note{margin:0 0 8px;color:#cbd5e1;font-size:11px;line-height:1.4;font-weight:800}
+    .foto-report-meta{margin:0 0 12px;padding:10px 12px;border:1px solid #334155;border-radius:14px;background:#0d1630;color:#93a4c7;font-size:10px;font-weight:900;line-height:1.35}
+    .foto-report-btn{width:100%}
+    .foto-report-format-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .foto-morosity-grid{display:grid;gap:7px;margin-top:4px}
+    .foto-morosity-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff12;padding-bottom:7px;font-size:11px;font-weight:850}
+    .foto-morosity-row:last-child{border-bottom:0;padding-bottom:0}
+    .foto-morosity-row span{color:#93a4c7}
+    .foto-morosity-row b{text-align:right;color:#fff}
+    .foto-morosity-row.total span,.foto-morosity-row.total b{color:#67e8f9}
+    .foto-morosity-rules{margin-top:10px;padding:10px 12px;border:1px dashed #334155;border-radius:14px;background:#0d1630;color:#94a3b8;font-size:10px;font-weight:800;line-height:1.4}
+    .foto-location-log-meta{margin:0 0 10px;color:#93a4c7;font-size:10px;font-weight:800;line-height:1.35}
+    .foto-location-log-list{display:grid;gap:8px;max-height:220px;overflow:auto;padding-right:2px}
+    .foto-location-empty{padding:12px;border:1px dashed #334155;border-radius:14px;background:#0d1630;color:#94a3b8;font-size:10px;font-weight:800;line-height:1.4;text-align:center}
+    .foto-location-item{border:1px solid #334155;background:#111a31;border-radius:14px;padding:10px 11px}
+    .foto-location-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px}
+    .foto-location-item-top b{color:#e0f2fe;font-size:11px}
+    .foto-location-item-top small{color:#64748b;font-size:9px;font-weight:900;white-space:nowrap}
+    .foto-location-item-body{display:grid;gap:4px;color:#cbd5e1;font-size:10px;font-weight:800;line-height:1.35}
+    .foto-location-item-body em{color:#67e8f9;font-style:normal;font-size:10px;font-weight:900}
+    .foto-location-item-body small{color:#94a3b8;font-size:9px;font-weight:800}
+    .toolbar-bottom{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+    @media(max-width:1180px){.content{grid-template-columns:320px 1fr}.right-panel{display:none}}
+    @media(max-width:850px){body{overflow:auto}.app{display:block}.main{height:auto}.content{display:block;height:auto;padding:12px}.card{margin-bottom:14px}.map-shell{height:560px}.top-actions{display:none}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><img class="logo-img" src="data:image/png;base64,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" alt="Logo FISE"><div class="brand-sub">SAT CONTROL - FOTOVOLTAICO</div></div>
+    <nav class="nav">
+      <button class="active"><span class="ico">▣</span>SatControl</button>
+      <div class="subnav">
+        <div class="active">GIS paneles FV</div>
+      </div>
+    </nav>
+    <div class="bottom"><button><span class="ico">👤</span>Ver perfil</button><button class="logout"><span class="ico">⎋</span>Cerrar sesión</button></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-actions" style="justify-content:flex-start">
+        <button class="toggle-btn" id="toggleSidebarBtn" title="Ocultar menu lateral">≡</button>
+      </div>
+      <div class="title-block">
+        <h1>SAT CONTROL - FOTOVOLTAICO</h1>
+      </div>
+      <div class="top-actions metrics">
+        <div class="pill-top">Activos visibles: <b id="visibleCounter">0</b></div>
+        <div class="pill-top">Total inventario: <b>200</b></div>
+      </div>
+    </header>
+
+    <section class="content">
+      <button class="sat-panel-toggle sat-left-toggle" id="toggleProjectsMapBtn" type="button" title="Ocultar panel izquierdo" aria-label="Ocultar panel izquierdo"></button>
+      <button class="sat-panel-toggle sat-right-toggle" id="toggleInfoMapBtn" type="button" title="Ocultar panel derecho" aria-label="Ocultar panel derecho"></button>
+      <aside class="card left-panel">
+        <div class="panel-head"><h2>Control del inventario</h2><div class="panel-actions"><button class="btn" id="refreshBtn">Regenerar puntos</button><button class="toggle-btn" id="hideLeftPanelBtn" title="Ocultar panel izquierdo">&lt;</button></div></div>
+        <div class="search">
+          <input id="codeSearch" placeholder="Buscar código de panel, ej. PFV-000123" />
+        </div>
+        <div class="search" style="padding-top:0">
+          <select id="statusFilter">
+            <option value="all">Todos los estados</option>
+            <option value="operativo">Operativo</option>
+            <option value="observado">Observado</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div class="stack">
+          <div class="mini">
+            <h3>KPIs del inventario</h3>
+            <div class="kpis">
+              <div class="kpi"><span>Total sistemas</span><b>200</b></div>
+              <div class="kpi"><span>Operativos</span><b id="operativosKpi">0</b></div>
+              <div class="kpi"><span>Observados</span><b id="observadosKpi">0</b></div>
+              <div class="kpi"><span>Inactivos</span><b id="inactivosKpi">0</b></div>
+            </div>
+          </div>
+          <div class="mini" id="fotoLocationLogCard">
+            <div class="evidence-head" style="margin-bottom:10px">
+              <div>
+                <h3>Cambios de ubicación</h3>
+                <small>Registro de cambios de ubicación de paneles</small>
+              </div>
+              <span class="selection-badge" id="fotoLocationLogBadge">Bitácora</span>
+            </div>
+            <div class="foto-location-log-meta">Historial y bitácora de cambio de coordenadas geográficas del inventario.</div>
+            <div class="foto-location-log-list" id="fotoLocationLogList"></div>
+            <button type="button" class="btn dark" id="fotoLocationLogClearBtn" style="width:100%;margin-top:10px">Limpiar bitácora</button>
+          </div>
+          <div hidden>
+            <p id="selectionHint"></p>
+            <button class="btn dark" id="zoomPeruBtn" type="button">Ver Perú completo</button>
+            <button class="btn dark" id="randomSelectBtn" type="button">Seleccionar uno</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="map-wrap">
+        <div class="map-shell card">
+          <div id="map"></div>
+          <button class="map-side-toggle left" id="showLeftPanelBtn" title="Mostrar panel izquierdo">&gt;</button>
+          <button class="map-side-toggle right" id="showRightPanelBtn" title="Mostrar panel derecho">&lt;</button>
+          <div class="gis-toolbar">
+            <details class="foto-menu" id="mapasDetails">
+              <summary class="ge-action-btn" id="mapasBtn" title="Seleccionar mapa base">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 7h14"></path>
+                  <path d="M5 12h14"></path>
+                  <path d="M5 17h14"></path>
+                  <circle class="fill-current" cx="8" cy="7" r="1.6"></circle>
+                  <circle class="fill-current" cx="16" cy="12" r="1.6"></circle>
+                  <circle class="fill-current" cx="11" cy="17" r="1.6"></circle>
+                </svg>
+                <span>Mapas</span>
+              </summary>
+              <div class="floating-panel foto-maps-panel" id="mapsPanel">
+                <div class="floating-title">Mapas</div>
+                <button class="layer-option foto-map-option active" id="baseOsmBtn" type="button">OSM</button>
+                <button class="layer-option foto-map-option" id="baseSatBtn" type="button">Topográfico</button>
+                <div class="hint">Seleccione el estilo de mapa base para visualizar la información territorial.</div>
+              </div>
+            </details>
+            <details class="foto-menu" id="layersDetails">
+              <summary class="ge-action-btn" id="toggleLayersBtn" title="Seleccionar capas superpuestas">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4l8 4-8 4-8-4 8-4z"></path>
+                  <path d="M4 12l8 4 8-4"></path>
+                  <path d="M4 16l8 4 8-4"></path>
+                </svg>
+                <span>Capas</span>
+              </summary>
+              <div class="floating-panel" id="inventoryPanel">
+                <div class="floating-title">Inventario y Control Geográfico</div>
+                <label class="layer-option"><input type="checkbox" id="togglePanelPoints" checked> Sistemas / paneles</label>
+                <label class="layer-option"><input type="checkbox" id="showOperativo" checked> Mostrar operativos</label>
+                <label class="layer-option"><input type="checkbox" id="showObservado" checked> Mostrar observados</label>
+                <label class="layer-option"><input type="checkbox" id="showInactivo" checked> Mostrar inactivos</label>
+                <div class="hint">Los 200 puntos se dibujan solo dentro del territorio continental del Perú. No se muestran activos en el mar ni fuera del contorno continental.</div>
+                <div class="legend">
+                  <span class="badge b-ok"><span class="status-dot sd-ok"></span> Operativo</span>
+                  <span class="badge b-warn"><span class="status-dot sd-warn"></span> Observado</span>
+                  <span class="badge b-off"><span class="status-dot sd-off"></span> Inactivo</span>
+                </div>
+              </div>
+            </details>
+            <button class="ge-btn active" id="prepareMapSelectionBtn" title="Limpiar panel derecho y preparar selección en mapa" aria-label="Limpiar panel derecho y preparar selección en mapa">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2V6z"></path>
+                <path d="M9 4v14"></path>
+                <path d="M15 6v14"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="map-search">
+            <div class="map-search-row"><input id="mapSearch" placeholder="Buscar panel por código" /><button id="mapSearchBtn">⌕</button></div>
+            <small>Ejemplo: PFV-000001, PFV-120500</small>
+          </div>
+          <div class="info-chip" id="mapInfo">Visualización de 200 paneles fotovoltaicos distribuidos en tierra firme del Perú continental, con mejor limpieza visual y sin puntos en el mar.</div>
+        </div>
+      </section>
+
+      <aside class="card right-panel">
+        <div class="title-box">
+          <button class="toggle-btn right-hide-btn" id="hideRightPanelBtn" title="Ocultar panel derecho">&gt;</button>
+          <h2 id="panelTitle">Ficha de panel solar</h2>
+          <p id="panelSubtitle">Selecciona un punto del mapa para ver el detalle completo</p>
+        </div>
+        <div class="mini">
+          <div class="utils-grid foto-internal-utils" style="display:none" aria-hidden="true">
+            <button class="util-btn icon-only active" id="utilSelect" title="Seleccionar"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l10 10-4 1-2 5-2-6-5-2z"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilCircle" title="Selección circular"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilFit" title="Ver Perú"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilRandom" title="Aleatorio"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h4l6 10h4"/><path d="M17 7h2v2"/><path d="M19 7l-3 3"/><path d="M5 17h4l2-3"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilInventory" title="Inventario"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="10" height="15" rx="2"/><path d="M9 5.5h6v3H9z"/><path d="M9 11h6"/><path d="M9 15h6"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilPin" title="Registrar Punto"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.8 6-11a6 6 0 10-12 0c0 5.2 6 11 6 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilDger" title="Procesar resoluciones DGER"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 10l4 8"/><path d="M13 10l-4 8"/></svg></span></button>
+          </div>
+          <div class="circle-hint" id="toolHint">Modo actual: selección individual de paneles.</div>
+          <div class="circle-config" id="circleConfigPanel">
+            <div class="circle-config-top"><b>Selección circular</b><span class="radius-value" id="radiusValue">65 km</span></div>
+            <input type="range" min="10" max="250" step="5" value="65" class="radius-slider" id="radiusSlider" />
+            <div class="circle-actions">
+            <button class="util-btn" id="applyCircleBtn">Finalizar</button>
+              <button class="util-btn" id="clearCircleBtn">Limpiar</button>
+            </div>
+            <div class="tiny-note">Haz clic en el mapa para marcar el <b>centro</b> del círculo. Luego ajusta el radio con el control variable para recargar la información de los paneles incluidos.</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="evidence-head"><h3 id="detailsTitle">Información del panel seleccionado</h3><span class="selection-badge" id="selectionModeBadge">Individual</span></div>
+          <div class="details-grid" id="panelDetails"></div>
+        </div>
+        <div class="mini" id="fotoMorosityCard">
+          <div class="evidence-head">
+            <div>
+              <h3>Morosidad e IGV</h3>
+              <small>Cálculo automático según reglas de negocio</small>
+            </div>
+            <span class="badge b-warn" id="fotoMorosityBadge">Automático</span>
+          </div>
+          <div class="foto-morosity-grid" id="fotoMorosityDetail">
+            <div class="foto-morosity-row"><span>Tarifa OPEX mensual</span><b>—</b></div>
+            <div class="foto-morosity-row"><span>Periodos adeudados</span><b>—</b></div>
+            <div class="foto-morosity-row"><span>Base morosidad</span><b>—</b></div>
+            <div class="foto-morosity-row"><span>IGV (18%)</span><b>—</b></div>
+            <div class="foto-morosity-row"><span>Morosidad total</span><b>—</b></div>
+            <div class="foto-morosity-row"><span>Cargo RER (24%)</span><b>—</b></div>
+            <div class="foto-morosity-row total"><span>Total sustento transferencia</span><b>—</b></div>
+          </div>
+          <div class="foto-morosity-rules" id="fotoMorosityRules">Seleccione un panel en el mapa para calcular morosidad e IGV.</div>
+        </div>
+        <div class="mini" id="fotoReportCard">
+          <div class="evidence-head">
+            <div>
+              <h3>Reporte técnico</h3>
+              <small>Sustento para transferencia</small>
+            </div>
+          </div>
+          <p class="foto-report-note">Generación de reporte técnico de sustento para transferencia.</p>
+          <div class="foto-report-meta" id="fotoReportMeta">Seleccione un panel en el mapa para habilitar la generación.</div>
+          <button type="button" class="btn foto-report-btn" id="fotoReportOpenBtn">Generar reporte</button>
+        </div>
+        <div class="mini">
+          <div class="evidence-head"><div><h3>Evidencia</h3><small id="evidenceSubtitle">Mínimo 1 foto visible</small></div><span class="badge b-ok" id="evidenceCountBadge">1/1 foto</span></div>
+          <div id="evidenceSingleWrap" class="foto-evidence-viewer">
+            <div class="foto-evidence-stage">
+              <img id="panelPhoto" alt="Evidencia del panel solar" />
+              <div class="foto-evidence-overlay"><span class="foto-evidence-tag" id="panelPhotoTag">📷 Campo</span></div>
+            </div>
+            <div class="foto-evidence-toolbar">
+              <button type="button" class="btn" id="fotoEvidenceLoadBtn">Cargar imagen</button>
+              <button type="button" class="btn" id="fotoEvidenceReplaceBtn">Reemplazar</button>
+              <input type="file" id="fotoEvidenceInput" accept="image/*" hidden />
+            </div>
+            <div class="foto-evidence-photos" id="fotoEvidenceStrip"></div>
+            <div class="photo-caption" id="panelPhotoCaption">Sin evidencia cargada aún.</div>
+          </div>
+          <div id="evidenceGallery" class="thumb-grid" style="display:none"></div>
+        </div>
+        <div class="mini" id="summaryCard" style="display:none">
+          <h3>Resumen objeto seleccionado</h3>
+          <div id="summaryContent"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div class="pin-modal" id="pinModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Registrar Punto</span>
+        <h2>Nuevo punto fotovoltaico</h2>
+        <p>Selecciona un punto en el mapa para capturar la latitud y longitud. Luego completa la ficha técnica y envíala a un usuario para supervisión.</p>
+      </div>
+      <button class="pin-close" id="closePinModalBtn">×</button>
+    </div>
+    <div class="pin-grid">
+      <div class="pin-field"><label>Latitud</label><input id="pinLat" readonly /></div>
+      <div class="pin-field"><label>Longitud</label><input id="pinLng" readonly /></div>
+      <div class="pin-field"><label>Tecnología</label><select id="pinTechnology"><option>Monocristalino</option><option>Policristalino</option><option selected>Bifacial</option></select></div>
+      <div class="pin-field"><label>Capacidad</label><input id="pinCapacity" value="550 Wp" /></div>
+      <div class="pin-field"><label>Inversor</label><input id="pinInverter" value="3 kVA" /></div>
+      <div class="pin-field"><label>Batería</label><input id="pinBattery" value="5 x 100 Ah" /></div>
+      <div class="pin-field"><label>Instalación</label><input id="pinInstallation" value="12/12/2025" /></div>
+      <div class="pin-field"><label>Último mantenimiento</label><input id="pinMaintenance" value="10/06/2026" /></div>
+      <div class="pin-field"><label>Sincronización</label><select id="pinSync"><option selected>Sincronizado</option><option>Pendiente de sincronización</option></select></div>
+      <div class="pin-field"><label>OPEX</label><select id="pinOpex"><option selected>Pago OPEX habilitado</option><option>Pago OPEX bloqueado</option></select></div>
+      <div class="pin-field full"><label>Observación</label><textarea id="pinObservation">Equipo operativo sin incidencias críticas.</textarea></div>
+      <div class="pin-field"><label>Enviar a usuario</label><select id="pinSupervisor"><option value="">Seleccionar usuario supervisor</option><option>Carolina Jara</option><option>Oliver Gonzales</option><option>Vitor</option><option>Supervisor Regional Madre de Dios</option></select></div>
+      <div class="pin-field"><label>Estado de envío</label><input id="pinSendStatus" value="Pendiente de envío" readonly /></div>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="pinStatusMsg">Selecciona un punto en el mapa con la herramienta Registrar Punto.</div>
+      <div class="pin-btns"><button class="pin-btn" id="savePinDraftBtn">Guardar borrador</button><button class="pin-btn success" id="sendPinBtn">Enviar a supervisión</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="dgerModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Resoluciones DGER</span>
+        <h2>Procesamiento de data de instalaciones DGER</h2>
+        <p>Cargue el Excel de resoluciones DGER para calcular automáticamente la morosidad, el IGV y los cargos RER de la transferencia.</p>
+      </div>
+      <button class="pin-close" id="closeDgerModalBtn">×</button>
+    </div>
+    <input type="file" id="dgerExcelInput" accept=".xlsx,.xls,.csv" style="display:none" />
+    <div class="mini" style="margin-bottom:14px">
+      <div class="evidence-head"><h3>Importación de datos</h3><span class="selection-badge">Excel</span></div>
+      <div class="pin-grid" style="margin-top:10px">
+        <div class="pin-field full">
+          <label>Archivo Excel de resoluciones DGER</label>
+          <input id="dgerFileName" value="Ningún archivo seleccionado" readonly />
+        </div>
+      </div>
+      <div class="pin-btns" style="margin-top:12px">
+        <button class="pin-btn primary" id="selectDgerFileBtn">Seleccionar Excel</button>
+        <button class="pin-btn success" id="processDgerBtn">Procesar archivo</button>
+      </div>
+    </div>
+    <div class="mini">
+      <div class="evidence-head"><h3>Resultados del procesamiento</h3><span class="selection-badge">Automático</span></div>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-kpi"><span>Morosidad</span><b id="dgerMorosidad">S/ 0</b></div>
+        <div class="summary-kpi"><span>IGV (18%)</span><b id="dgerIgv">S/ 0</b></div>
+        <div class="summary-kpi"><span>Cargo RER</span><b id="dgerRer">S/ 0</b></div>
+        <div class="summary-kpi"><span>Registros</span><b id="dgerRows">0</b></div>
+      </div>
+    </div>
+    <div class="mini" style="margin-top:14px">
+      <div class="evidence-head"><h3>Detalle de instalaciones procesadas</h3><span class="selection-badge">DGER</span></div>
+      <div id="dgerDetailTable" style="max-height:220px;overflow:auto;margin-top:10px;color:#cbd5e1;font-size:11px;font-weight:800">Seleccione y procese un archivo para visualizar el detalle.</div>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="dgerStatusMsg">Selecciona un archivo Excel para iniciar el procesamiento.</div>
+      <div class="pin-btns"><button class="pin-btn" id="closeDgerFooterBtn">Cerrar</button><button class="pin-btn success" id="exportDgerReportBtn" disabled>Exportar reporte técnico</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="fotoReportModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">SATCONTROL</span>
+        <h2>Generar reporte técnico</h2>
+        <p>Generación de reporte técnico de sustento para transferencia. Elija el formato de descarga.</p>
+      </div>
+      <button class="pin-close" id="closeFotoReportModalBtn">×</button>
+    </div>
+    <div class="mini" style="margin-bottom:14px">
+      <div class="summary-grid">
+        <div class="summary-kpi"><span>Modo</span><b id="fotoReportModalMode">Individual</b></div>
+        <div class="summary-kpi"><span>Registros</span><b id="fotoReportModalCount">0</b></div>
+      </div>
+      <div class="summary-total" style="margin-top:12px">
+        <div class="summary-total-row"><span>Referencia</span><b id="fotoReportModalRef">—</b></div>
+        <div class="summary-total-row"><span>Base morosidad</span><b id="fotoReportModalBase">S/ 0</b></div>
+        <div class="summary-total-row"><span>IGV (18%)</span><b id="fotoReportModalIgv">S/ 0</b></div>
+        <div class="summary-total-row"><span>Morosidad total</span><b id="fotoReportModalMor">S/ 0</b></div>
+        <div class="summary-total-row"><span>Cargo RER (24%)</span><b id="fotoReportModalRer">S/ 0</b></div>
+        <div class="summary-total-row"><span>Total sustento</span><b id="fotoReportModalTotal">S/ 0</b></div>
+      </div>
+    </div>
+    <div class="foto-report-format-grid">
+      <button type="button" class="pin-btn success" id="fotoReportXlsxBtn">Descargar .xlsx</button>
+      <button type="button" class="pin-btn" id="fotoReportPdfBtn">Descargar .pdf</button>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="fotoReportModalStatus">El reporte incluirá ficha técnica, ubicación, estado operativo y montos de sustento.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="fotoStatusChangeModal">
+  <div class="pin-modal-card" style="width:min(520px,94vw)">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Estado operativo</span>
+        <h2 id="fotoStatusChangeTitle">Cambiar estado</h2>
+        <p id="fotoStatusChangeMessage">¿Desea cambiar el estado del panel seleccionado?</p>
+      </div>
+      <button class="pin-close" id="closeFotoStatusChangeModalBtn" type="button">×</button>
+    </div>
+    <div class="summary-total" style="margin-bottom:14px">
+      <div class="summary-total-row"><span>Nuevo estado</span><b id="fotoStatusChangeTarget">—</b></div>
+    </div>
+    <div class="pin-btns" style="justify-content:flex-end">
+      <button class="pin-btn" id="cancelFotoStatusChangeBtn" type="button">Cancelar</button>
+      <button class="pin-btn success" id="confirmFotoStatusChangeBtn" type="button">Confirmar cambio</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+(() => {
+  const TOTAL_PANELS = 200;
+  const boundsPeru = {minLat:-18.35,maxLat:-0.1,minLng:-81.4,maxLng:-68.55};
+  // Polígono simplificado del Perú continental (lng, lat)
+  const peruPoly = [
+    [-80.25,-3.52],[-80.60,-4.10],[-80.82,-4.95],[-80.95,-5.85],[-80.88,-6.80],[-80.72,-7.75],[-80.42,-8.85],[-79.98,-9.95],[-79.48,-11.05],[-78.98,-12.15],[-78.28,-13.20],[-77.45,-14.25],[-76.55,-15.20],[-75.55,-16.05],[-74.45,-16.85],[-73.20,-17.55],[-71.95,-17.92],[-70.70,-18.12],[-69.70,-17.60],[-69.10,-16.25],[-68.95,-14.95],[-68.98,-13.55],[-69.15,-12.10],[-69.35,-10.65],[-69.65,-9.25],[-70.08,-7.85],[-70.58,-6.55],[-71.12,-5.55],[-71.85,-4.60],[-72.72,-3.78],[-73.75,-3.05],[-74.90,-2.50],[-76.10,-2.20],[-77.15,-2.32],[-78.15,-2.65],[-79.10,-3.05],[-80.00,-3.36],[-80.25,-3.52]
+  ];
+  const REGION_SEEDS = [
+    [-3.75,-80.45,0.70,0.65],[-5.20,-80.15,0.85,0.80],[-6.75,-79.85,0.95,0.85],[-8.05,-78.85,0.95,0.85],
+    [-9.55,-77.55,1.10,0.95],[-11.15,-76.55,1.15,1.00],[-12.35,-75.20,1.05,0.95],[-13.75,-74.55,1.10,1.05],
+    [-15.05,-73.85,1.10,0.95],[-16.35,-72.25,1.00,0.90],[-17.05,-70.75,0.90,0.80],[-6.05,-76.85,1.20,1.05],
+    [-4.55,-74.95,1.25,1.20],[-8.55,-74.55,1.35,1.10],[-9.95,-75.95,1.10,0.95],[-10.75,-74.75,1.05,0.95],
+    [-12.95,-72.65,1.15,1.05],[-13.75,-71.95,1.05,0.95],[-15.75,-69.95,0.95,0.85],[-12.55,-69.15,1.05,0.90]
+  ];
+  const DEPARTMENTS = [
+    ['Tumbes','Zarumilla','Matapalo'],['Piura','Piura','Las Lomas'],['Lambayeque','Chiclayo','Pimentel'],['La Libertad','Trujillo','Poroto'],
+    ['Ancash','Huaraz','Taricá'],['Lima','Huaral','Aucallama'],['Ica','Ica','Subtanjalla'],['Arequipa','Camaná','Nicolás de Piérola'],
+    ['Moquegua','Mariscal Nieto','Samegua'],['Tacna','Tacna','Calana'],['Cajamarca','Cajamarca','Baños del Inca'],['Amazonas','Chachapoyas','Huancas'],
+    ['San Martín','Moyobamba','Yantaló'],['Loreto','Maynas','Belén'],['Ucayali','Coronel Portillo','Yarinacocha'],['Huánuco','Huánuco','Santa María del Valle'],
+    ['Pasco','Pasco','Yanacancha'],['Junín','Huancayo','El Tambo'],['Huancavelica','Huancavelica','Ascensión'],['Ayacucho','Huamanga','Jesús Nazareno'],
+    ['Apurímac','Abancay','Tamburco'],['Cusco','Cusco','San Sebastián'],['Puno','Puno','Paucarcolla'],['Madre de Dios','Tambopata','Laberinto']
+  ];
+  const panelType = ['Monocristalino','Policristalino','Bifacial'];
+  const capacities = [330,350,400,450,550];
+  const statuses = ['operativo','observado','inactivo'];
+
+  const map = L.map('map', {preferCanvas:true, zoomControl:false, attributionControl:true}).setView([-9.2,-75.05], 5);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  const baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+  const baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom:17, attribution:'© OpenTopoMap'});
+  const peruOutline = L.polygon(peruPoly.map(([lng,lat])=>[lat,lng]), {color:'#38bdf8',weight:1.2,opacity:.42,dashArray:'8 6',fillColor:'#38bdf8',fillOpacity:0.025}).addTo(map);
+  function fitPeruOverview(animate = false){
+    map.fitBounds(peruOutline.getBounds().pad(0.18), {
+      paddingTopLeft: [42, 42],
+      paddingBottomRight: [42, 42],
+      maxZoom: 5,
+      animate
+    });
+  }
+
+  const latitudes = new Float32Array(TOTAL_PANELS);
+  const longitudes = new Float32Array(TOTAL_PANELS);
+  const statusCodes = new Uint8Array(TOTAL_PANELS);
+  const deptCodes = new Uint8Array(TOTAL_PANELS);
+  const visibleFlags = new Uint8Array(TOTAL_PANELS);
+
+  let selectedIndex = 0;
+  let overlayVisible = true;
+  let showState = {operativo:true, observado:true, inactivo:true};
+  let drawRequested = false;
+  let visibleCount = 0;
+  let mapTool = 'select';
+  let selectionCircle = null;
+  let selectionCenterMarker = null;
+  let selectionCenterLatLng = null;
+  let circleSelectionRadius = 65000;
+  let circleDraftActive = false;
+  let multiSelection = [];
+  let dgerProcessedRows = [];
+  let draftPinMarker = null;
+  let draftPinLatLng = null;
+  const panelLocationLog = [];
+  let locationTrackingReady = false;
+  const MAX_LOCATION_LOG = 40;
+
+  function qs(id){ return document.getElementById(id); }
+
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  }
+
+  function pointInPolygon(lng, lat, poly){
+    let inside = false;
+    for(let i=0, j=poly.length-1; i<poly.length; j=i++){
+      const xi = poly[i][0], yi = poly[i][1];
+      const xj = poly[j][0], yj = poly[j][1];
+      const intersect = ((yi > lat) !== (yj > lat)) &&
+        (lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi);
+      if(intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function randomOffset(rand, spread){
+    return (((rand() + rand() + rand()) / 3) - 0.5) * spread;
+  }
+  function randomPointInPeru(rand){
+    for(let attempts = 0; attempts < 5000; attempts++){
+      const seed = REGION_SEEDS[Math.floor(rand() * REGION_SEEDS.length)];
+      const lat = seed[0] + randomOffset(rand, seed[2]);
+      const lng = seed[1] + randomOffset(rand, seed[3]);
+      if(pointInPolygon(lng, lat, peruPoly)) return [lat, lng];
+    }
+    // Fallback más estricto para evitar puntos en el mar
+    for(let attempts = 0; attempts < 5000; attempts++){
+      const lat = boundsPeru.minLat + rand() * (boundsPeru.maxLat - boundsPeru.minLat);
+      const lng = boundsPeru.minLng + rand() * (boundsPeru.maxLng - boundsPeru.minLng);
+      if(pointInPolygon(lng, lat, peruPoly) && lng > -80.95) return [lat, lng];
+    }
+    return [-12.05, -76.95];
+  }
+
+  function generatePanelPoints(seed = 20260526){
+    const oldLat = Float32Array.from(latitudes);
+    const oldLng = Float32Array.from(longitudes);
+    const rand = mulberry32(seed);
+    let op=0, ob=0, ina=0;
+    for(let i=0; i<TOTAL_PANELS; i++){
+      const [lat,lng] = randomPointInPeru(rand);
+      latitudes[i] = lat;
+      longitudes[i] = lng;
+      const r = rand();
+      const sc = r < 0.83 ? 0 : (r < 0.95 ? 1 : 2);
+      statusCodes[i] = sc;
+      deptCodes[i] = Math.floor(rand() * DEPARTMENTS.length);
+      visibleFlags[i] = 1;
+      if(sc===0) op++; else if(sc===1) ob++; else ina++;
+    }
+    qs('operativosKpi').textContent = op.toLocaleString('es-PE');
+    qs('observadosKpi').textContent = ob.toLocaleString('es-PE');
+    qs('inactivosKpi').textContent = ina.toLocaleString('es-PE');
+    if(locationTrackingReady){
+      let movedCount = 0;
+      for(let i=0; i<TOTAL_PANELS; i++){
+        if(map.distance([oldLat[i], oldLng[i]], [latitudes[i], longitudes[i]]) >= 10) movedCount++;
+      }
+      if(movedCount > 0){
+        const focusIndex = (selectedIndex !== null && selectedIndex !== undefined) ? selectedIndex : 0;
+        logPanelLocationChange({
+          panelCode: movedCount === 1 ? panelCode(focusIndex) : `INVENTARIO (${movedCount} paneles)`,
+          panelIndex: movedCount === 1 ? focusIndex : null,
+          fromLat: oldLat[focusIndex],
+          fromLng: oldLng[focusIndex],
+          toLat: latitudes[focusIndex],
+          toLng: longitudes[focusIndex],
+          reason: `Regeneración de inventario · ${movedCount} panel(es) con nueva ubicación`,
+          user: 'Operador SATCONTROL'
+        });
+      }
+    }
+    locationTrackingReady = true;
+  }
+  function logPanelLocationChange(entry, silent){
+    panelLocationLog.unshift({
+      panelCode: entry.panelCode || 'PFV',
+      panelIndex: entry.panelIndex ?? null,
+      fromLat: entry.fromLat,
+      fromLng: entry.fromLng,
+      toLat: entry.toLat,
+      toLng: entry.toLng,
+      reason: entry.reason || 'Actualización de ubicación',
+      user: entry.user || 'Sistema SATCONTROL',
+      at: entry.at instanceof Date ? entry.at : new Date()
+    });
+    if(panelLocationLog.length > MAX_LOCATION_LOG) panelLocationLog.length = MAX_LOCATION_LOG;
+    if(!silent) renderPanelLocationLog();
+  }
+  function renderPanelLocationLog(){
+    const box = qs('fotoLocationLogList');
+    const badge = qs('fotoLocationLogBadge');
+    if(!box) return;
+    if(badge) badge.textContent = panelLocationLog.length ? `${panelLocationLog.length} registro(s)` : 'Bitácora';
+    if(!panelLocationLog.length){
+      box.innerHTML = '<div class="foto-location-empty">Aún no hay cambios de ubicación registrados en la bitácora.</div>';
+      return;
+    }
+    box.innerHTML = panelLocationLog.map(item => `
+      <article class="foto-location-item">
+        <div class="foto-location-item-top">
+          <b>${item.panelCode}</b>
+          <small>${item.at.toLocaleString('es-PE')}</small>
+        </div>
+        <div class="foto-location-item-body">
+          <span>${formatCoord(item.fromLat)}, ${formatCoord(item.fromLng)} → ${formatCoord(item.toLat)}, ${formatCoord(item.toLng)}</span>
+          <em>${item.reason}</em>
+          <small>${item.user}</small>
+        </div>
+      </article>
+    `).join('');
+  }
+  function seedPanelLocationLog(){
+    if(panelLocationLog.length) return;
+    [
+      { idx: 0, reason: 'Corrección GPS de campo', user: 'Oliver Gonzales', days: 9 },
+      { idx: 14, reason: 'Validación supervisión regional', user: 'Supervisor Regional Madre de Dios', days: 6 },
+      { idx: 37, reason: 'Ajuste por reubicación técnica', user: 'Carolina Jara', days: 3 }
+    ].forEach(item => {
+      const panel = buildPanel(item.idx);
+      logPanelLocationChange({
+        panelCode: panel.code,
+        panelIndex: item.idx,
+        fromLat: panel.latitude + 0.012,
+        fromLng: panel.longitude - 0.018,
+        toLat: panel.latitude,
+        toLng: panel.longitude,
+        reason: item.reason,
+        user: item.user,
+        at: new Date(Date.now() - item.days * 86400000)
+      }, true);
+    });
+    renderPanelLocationLog();
+  }
+  function applyPinLocationUpdate(reason, user){
+    if(!draftPinLatLng) return;
+    const lat = draftPinLatLng.lat;
+    const lng = draftPinLatLng.lng;
+    if(selectedIndex !== null && selectedIndex !== undefined){
+      const oldLat = latitudes[selectedIndex];
+      const oldLng = longitudes[selectedIndex];
+      if(map.distance([oldLat, oldLng], [lat, lng]) >= 1){
+        latitudes[selectedIndex] = lat;
+        longitudes[selectedIndex] = lng;
+        logPanelLocationChange({
+          panelCode: panelCode(selectedIndex),
+          panelIndex: selectedIndex,
+          fromLat: oldLat,
+          fromLng: oldLng,
+          toLat: lat,
+          toLng: lng,
+          reason,
+          user
+        });
+        solarLayer.redraw();
+        selectPanel(selectedIndex, false);
+      }
+      return;
+    }
+    logPanelLocationChange({
+      panelCode: 'NUEVO-PUNTO',
+      fromLat: lat,
+      fromLng: lng,
+      toLat: lat,
+      toLng: lng,
+      reason: 'Captura inicial de nuevo punto fotovoltaico',
+      user
+    });
+  }
+
+  class SolarCanvasLayer extends L.Layer {
+    constructor(){ super(); this._canvas = null; this._selected = null; }
+    onAdd(map){
+      this._map = map;
+      this._canvas = L.DomUtil.create('canvas', 'leaflet-zoom-animated');
+      this._canvas.style.position = 'absolute';
+      this._ctx = this._canvas.getContext('2d');
+      map.getPanes().overlayPane.appendChild(this._canvas);
+      map.on('moveend zoomend resize', this._reset, this);
+      map.on('click', this._handleClick, this);
+      this._reset();
+    }
+    onRemove(map){
+      L.DomUtil.remove(this._canvas);
+      map.off('moveend zoomend resize', this._reset, this);
+      map.off('click', this._handleClick, this);
+    }
+    setSelected(index){ this._selected = index; this.redraw(); }
+    redraw(){ if(!this._canvas) return; if(drawRequested) return; drawRequested = true; requestAnimationFrame(()=>{ drawRequested = false; this._draw(); }); }
+    _reset(){
+      const size = this._map.getSize();
+      this._canvas.width = size.x;
+      this._canvas.height = size.y;
+      const pos = this._map.containerPointToLayerPoint([0,0]);
+      L.DomUtil.setPosition(this._canvas, pos);
+      this.redraw();
+    }
+    _drawPanelIcon(ctx, x, y, color, selected){
+      const zoom = this._map ? this._map.getZoom() : 6;
+      const zoomScale = Math.max(1.25, 1 + (zoom - 5.8) * 0.24);
+      const scale = (selected ? 1.65 : 0.86) * zoomScale;
+      const w = 10 * scale, h = 7 * scale;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.shadowColor = selected ? 'rgba(255,255,255,.75)' : 'rgba(15,23,42,.45)';
+      ctx.shadowBlur = selected ? 14 : 6;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = selected ? '#ffffff' : 'rgba(255,255,255,.95)';
+      ctx.lineWidth = selected ? 2.2 : 1.25;
+      ctx.beginPath();
+      ctx.roundRect(-w/2, -h/2, w, h, 1.8 * scale);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,.72)';
+      ctx.lineWidth = .9 * zoomScale;
+      ctx.beginPath();
+      ctx.moveTo(-w/6, -h/2); ctx.lineTo(-w/6, h/2);
+      ctx.moveTo(w/6, -h/2); ctx.lineTo(w/6, h/2);
+      ctx.moveTo(-w/2, 0); ctx.lineTo(w/2, 0);
+      ctx.stroke();
+      ctx.strokeStyle = selected ? '#ffffff' : 'rgba(15,23,42,.85)';
+      ctx.lineWidth = 1.25 * zoomScale;
+      ctx.beginPath();
+      ctx.moveTo(0, h/2); ctx.lineTo(0, h/2 + 4.2*scale);
+      ctx.moveTo(-3*scale, h/2 + 4.2*scale); ctx.lineTo(3*scale, h/2 + 4.2*scale);
+      ctx.stroke();
+      if(selected){
+        ctx.strokeStyle = 'rgba(255,255,255,.95)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, Math.max(w,h)*0.9, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    _draw(){
+      const ctx = this._ctx;
+      const size = this._map.getSize();
+      ctx.clearRect(0, 0, size.x, size.y);
+      if(!overlayVisible) { visibleCount = 0; qs('visibleCounter').textContent = '0'; return; }
+      const bounds = this._map.getBounds();
+      const showOp = showState.operativo, showOb = showState.observado, showIna = showState.inactivo;
+      visibleCount = 0;
+      for(let i=0; i<TOTAL_PANELS; i++){
+        const lat = latitudes[i], lng = longitudes[i], sc = statusCodes[i];
+        const statusName = statuses[sc];
+        if((statusName==='operativo' && !showOp) || (statusName==='observado' && !showOb) || (statusName==='inactivo' && !showIna)) { visibleFlags[i]=0; continue; }
+        if(!bounds.contains([lat,lng])) { visibleFlags[i]=0; continue; }
+        visibleFlags[i] = 1; visibleCount++;
+        const p = this._map.latLngToContainerPoint([lat,lng]);
+        const color = sc===0 ? '#22c55e' : (sc===1 ? '#f59e0b' : '#ef4444');
+        if(this._map.getZoom() <= 6.2){
+          ctx.save();
+          ctx.globalAlpha = i === this._selected ? 0.28 : 0.14;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, i === this._selected ? 8 : 4.2, 0, Math.PI*2);
+          ctx.fill();
+          ctx.restore();
+        }
+        this._drawPanelIcon(ctx, p.x, p.y, color, i === this._selected);
+      }
+      qs('visibleCounter').textContent = visibleCount.toLocaleString('es-PE');
+    }
+    _handleClick(e){
+      if(!overlayVisible) return;
+      if(mapTool === 'circle'){
+        handleCircleToolClick(e.latlng);
+        return;
+      }
+      if(mapTool === 'pin'){
+        openPinModal(e.latlng);
+        return;
+      }
+      const clickPt = this._map.latLngToContainerPoint(e.latlng);
+      let best = -1, bestDist = 10;
+      const bounds = this._map.getBounds();
+      const showOp = showState.operativo, showOb = showState.observado, showIna = showState.inactivo;
+      for(let i=0; i<TOTAL_PANELS; i++){
+        const lat = latitudes[i], lng = longitudes[i], sc = statusCodes[i];
+        const statusName = statuses[sc];
+        if((statusName==='operativo' && !showOp) || (statusName==='observado' && !showOb) || (statusName==='inactivo' && !showIna)) continue;
+        if(!bounds.contains([lat,lng])) continue;
+        const p = this._map.latLngToContainerPoint([lat,lng]);
+        const dx = p.x - clickPt.x, dy = p.y - clickPt.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < bestDist){ bestDist = dist; best = i; }
+      }
+      if(best >= 0){ selectPanel(best, true); }
+    }
+  }
+
+  const solarLayer = new SolarCanvasLayer();
+  map.addLayer(solarLayer);
+  map.on('mousemove', e => updateCircleDraft(e.latlng));
+
+  function statusLabel(sc){ return statuses[sc].charAt(0).toUpperCase()+statuses[sc].slice(1); }
+  function statusBadge(sc){ return sc===0 ? '<span class="badge b-ok">Operativo</span>' : sc===1 ? '<span class="badge b-warn">Observado</span>' : '<span class="badge b-off">Inactivo</span>'; }
+  function refreshStatusKpis(){
+    let op=0, ob=0, ina=0;
+    for(let i=0; i<TOTAL_PANELS; i++){
+      const sc = statusCodes[i];
+      if(sc===0) op++; else if(sc===1) ob++; else ina++;
+    }
+    qs('operativosKpi').textContent = op.toLocaleString('es-PE');
+    qs('observadosKpi').textContent = ob.toLocaleString('es-PE');
+    qs('inactivosKpi').textContent = ina.toLocaleString('es-PE');
+  }
+  let pendingStatusChangeIndex = null;
+  let pendingStatusTarget = null;
+  function fotoStatusDetailHtml(panelIndex, sc){
+    const label = statusLabel(sc);
+    if(sc === 0 || sc === 2){
+      const cls = sc === 0 ? 'foto-status-toggle-btn badge b-ok ok' : 'foto-status-toggle-btn badge b-off off';
+      return `<div class="detail-row foto-status-row"><span>Estado</span><button type="button" class="${cls}" id="fotoStatusToggleBtn" data-panel-index="${panelIndex}" title="Clic para cambiar estado operativo"><span>${label}</span><span class="foto-status-ico" aria-hidden="true">↻</span></button></div>`;
+    }
+    return `<div class="detail-row"><span>Estado</span><span class="badge b-warn">${label}</span></div>`;
+  }
+  function openFotoStatusChangeModal(panelIndex){
+    const sc = statusCodes[panelIndex];
+    if(sc !== 0 && sc !== 2) return;
+    pendingStatusChangeIndex = panelIndex;
+    pendingStatusTarget = sc === 0 ? 2 : 0;
+    const panel = buildPanel(panelIndex);
+    qs('fotoStatusChangeTitle').textContent = sc === 0 ? 'Cambiar a Inactivo' : 'Cambiar a Operativo';
+    qs('fotoStatusChangeMessage').textContent = sc === 0
+      ? `¿Desea cambiar el estado del panel ${panel.code} de Operativo a Inactivo?`
+      : `¿Desea cambiar el estado del panel ${panel.code} de Inactivo a Operativo?`;
+    qs('fotoStatusChangeTarget').textContent = statusLabel(pendingStatusTarget);
+    qs('fotoStatusChangeModal').classList.add('open');
+  }
+  function closeFotoStatusChangeModal(){
+    pendingStatusChangeIndex = null;
+    pendingStatusTarget = null;
+    qs('fotoStatusChangeModal')?.classList.remove('open');
+  }
+  function confirmFotoStatusChange(){
+    if(pendingStatusChangeIndex === null || pendingStatusTarget === null) return;
+    const idx = pendingStatusChangeIndex;
+    const newSc = pendingStatusTarget;
+    const newLabel = statusLabel(newSc);
+    statusCodes[idx] = newSc;
+    closeFotoStatusChangeModal();
+    refreshStatusKpis();
+    solarLayer.redraw();
+    selectPanel(idx, false);
+    qs('mapInfo').textContent = `${buildPanel(idx).code} actualizado a ${newLabel}.`;
+  }
+  function bindFotoStatusToggleBtn(panelIndex){
+    const btn = qs('fotoStatusToggleBtn');
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      openFotoStatusChangeModal(panelIndex);
+    });
+  }
+  function panelCode(i){ return 'PFV-' + String(i+1).padStart(6,'0'); }
+  function installDate(i){ const y = 2021 + (i % 5); const m = String((i % 12) + 1).padStart(2,'0'); const d = String((i % 28) + 1).padStart(2,'0'); return `${d}/${m}/${y}`; }
+  function maintenanceDate(i){ const y = 2026; const m = String(((i*7)%12)+1).padStart(2,'0'); const d = String(((i*11)%28)+1).padStart(2,'0'); return `${d}/${m}/${y}`; }
+  function formatCoord(v){ return Number(v).toFixed(5); }
+  const MAX_FOTO_EVIDENCE = 5;
+  const panelEvidenceStore = new Map();
+  let activeEvidenceIndex = 0;
+  function evidenceReferentialSrc(panel){
+    const variant = panel.index % 3;
+    const rows = variant === 0
+      ? `<g transform="translate(80,250)"><rect x="0" y="0" width="800" height="12" rx="4" fill="#334155"/><g transform="skewY(-8)"><rect x="20" y="-95" width="760" height="88" rx="6" fill="#0f172a" stroke="#64748b" stroke-width="2"/><g stroke="#38bdf8" stroke-width="1.2" opacity=".55">${Array.from({length:11},(_,i)=>`<line x1="${40+i*68}" y1="-88" x2="${40+i*68}" y2="-12"/>`).join('')}${Array.from({length:5},(_,i)=>`<line x1="24" y1="${-78+i*16}" x2="776" y2="${-78+i*16}"/>`).join('')}</g><rect x="20" y="-95" width="760" height="88" rx="6" fill="url(#gGlass)" opacity=".18"/></g></g>`
+      : variant === 1
+      ? `<g transform="translate(60,220)">${[0,1,2].map(i=>`<g transform="translate(${i*260},${i*18}) skewY(-10)"><rect x="0" y="0" width="220" height="72" rx="5" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/><g stroke="#22d3ee" stroke-width="1" opacity=".45">${Array.from({length:7},(_,j)=>`<line x1="${12+j*30}" y1="8" x2="${12+j*30}" y2="64"/>`).join('')}${Array.from({length:4},(_,j)=>`<line x1="8" y1="${14+j*14}" x2="212" y2="${14+j*14}"/>`).join('')}</g><rect x="0" y="0" width="220" height="72" rx="5" fill="url(#gGlass)" opacity=".15"/><rect x="98" y="72" width="24" height="42" fill="#475569"/></g>`).join('')}</g>`
+      : `<g transform="translate(40,210)">${[0,1,2,3].map(i=>`<g transform="translate(${i*210},${(i%2)*24}) skewY(-12)"><rect x="0" y="0" width="190" height="64" rx="4" fill="#1e293b" stroke="#64748b"/><g stroke="#60a5fa" stroke-width=".9" opacity=".5">${Array.from({length:6},(_,j)=>`<line x1="${14+j*28}" y1="6" x2="${14+j*28}" y2="58"/>`).join('')}</g><rect x="88" y="64" width="14" height="36" fill="#334155"/></g>`).join('')}<circle cx="780" cy="120" r="34" fill="#fef08a" opacity=".85"/><path d="M720 170 L760 95 L800 170 Z" fill="#f59e0b" opacity=".25"/></g>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+      <defs>
+        <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="55%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#e0f2fe"/></linearGradient>
+        <radialGradient id="gSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fbbf24"/></radialGradient>
+        <linearGradient id="gHill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#15803d"/><stop offset="100%" stop-color="#14532d"/></linearGradient>
+        <linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#7dd3fc"/></linearGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+      <rect width="960" height="540" fill="url(#gSky)"/>
+      <circle cx="845" cy="88" r="58" fill="url(#gSun)" opacity=".92"/>
+      <circle cx="845" cy="88" r="78" fill="#fde047" opacity=".12" filter="url(#soft)"/>
+      <path d="M0 360 Q240 280 480 320 T960 300 L960 540 L0 540 Z" fill="url(#gHill)" opacity=".55"/>
+      <path d="M0 390 Q320 330 520 360 T960 340 L960 540 L0 540 Z" fill="#166534" opacity=".75"/>
+      <ellipse cx="480" cy="520" rx="500" ry="55" fill="#052e16" opacity=".35"/>
+      ${rows}
+      <rect x="0" y="430" width="960" height="110" fill="#14532d"/>
+      <g opacity=".22"><circle cx="120" cy="470" r="28" fill="#4ade80"/><circle cx="860" cy="455" r="22" fill="#4ade80"/><circle cx="640" cy="488" r="18" fill="#86efac"/></g>
+    </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+  function getPanelEvidenceList(panelIndex){
+    if(!panelEvidenceStore.has(panelIndex)) panelEvidenceStore.set(panelIndex, []);
+    return panelEvidenceStore.get(panelIndex);
+  }
+  function evidenceSvgFallback(panel){
+    return evidenceReferentialSrc(panel);
+  }
+  function defaultEvidenceSrc(panel){
+    return evidenceReferentialSrc(panel);
+  }
+  function evidenceImage(panel){
+    const uploaded = getPanelEvidenceList(panel.index);
+    if(uploaded.length) return uploaded[0].src;
+    return defaultEvidenceSrc(panel);
+  }
+  function renderPanelEvidenceUI(panelIndex){
+    const panel = buildPanel(panelIndex);
+    const list = getPanelEvidenceList(panelIndex);
+    const hasUploads = list.length > 0;
+    if(activeEvidenceIndex >= list.length) activeEvidenceIndex = 0;
+    const mainSrc = hasUploads ? (list[activeEvidenceIndex]?.src || list[0].src) : defaultEvidenceSrc(panel);
+    const photo = qs('panelPhoto');
+    photo.src = mainSrc;
+    photo.onerror = function(){
+      this.onerror = null;
+      this.src = evidenceSvgFallback(panel);
+    };
+    qs('evidenceCountBadge').textContent = `${hasUploads ? list.length : 1}/${MAX_FOTO_EVIDENCE} foto${hasUploads && list.length !== 1 ? 's' : ''}`;
+    qs('evidenceSubtitle').textContent = hasUploads ? `${list.length} foto(s) cargada(s)` : 'Mínimo 1 foto visible · puedes cargar hasta 5';
+    qs('panelPhotoCaption').textContent = hasUploads
+      ? `${list[activeEvidenceIndex]?.name || 'Evidencia ' + (activeEvidenceIndex + 1)} · ${panel.code} · ${panel.department}`
+      : `Vista referencial del panel ${panel.code} · ${panel.department} · Captura de campo georreferenciada.`;
+    qs('panelPhotoTag').textContent = hasUploads ? '📷 Cargada' : '📷 Referencial';
+    const strip = qs('fotoEvidenceStrip');
+    if(!strip) return;
+    let thumbsHtml = '';
+    if(hasUploads){
+      thumbsHtml = list.map((item, idx) =>
+        `<button type="button" class="foto-evidence-thumb${idx === activeEvidenceIndex ? ' active' : ''}" data-ev-index="${idx}">
+          <img src="${item.src}" alt="${item.name || 'Evidencia'}">
+          <span>${item.name || 'Foto ' + (idx + 1)}</span>
+        </button>`
+      ).join('');
+    } else {
+      thumbsHtml = `<button type="button" class="foto-evidence-thumb active" data-ev-index="0">
+        <img src="${defaultEvidenceSrc(panel)}" alt="Referencial">
+        <span>Referencial</span>
+      </button>`;
+    }
+    if(list.length < MAX_FOTO_EVIDENCE){
+      thumbsHtml += `<label class="foto-evidence-slot" id="fotoEvidenceAddSlot"><span>+</span><small>Agregar</small><input type="file" accept="image/*" /></label>`;
+    }
+    strip.innerHTML = thumbsHtml;
+    strip.querySelectorAll('.foto-evidence-thumb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeEvidenceIndex = Number(btn.dataset.evIndex);
+        renderPanelEvidenceUI(panelIndex);
+      });
+    });
+    const addSlot = qs('fotoEvidenceAddSlot');
+    if(addSlot){
+      addSlot.querySelector('input').addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if(file) handleEvidenceFile(file, panelIndex);
+        e.target.value = '';
+      });
+    }
+  }
+  function handleEvidenceFile(file, panelIndex){
+    if(!file || !file.type.startsWith('image/')) return;
+    const list = getPanelEvidenceList(panelIndex);
+    if(list.length >= MAX_FOTO_EVIDENCE){
+      qs('mapInfo').textContent = `Límite de ${MAX_FOTO_EVIDENCE} fotos por panel alcanzado.`;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      list.push({ src: reader.result, name: file.name });
+      activeEvidenceIndex = list.length - 1;
+      renderPanelEvidenceUI(panelIndex);
+      qs('mapInfo').textContent = `Evidencia cargada: ${file.name} para ${buildPanel(panelIndex).code}.`;
+    };
+    reader.readAsDataURL(file);
+  }
+  function replaceActiveEvidence(file, panelIndex){
+    if(!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const list = getPanelEvidenceList(panelIndex);
+      if(list.length){
+        list[activeEvidenceIndex] = { src: reader.result, name: file.name };
+      } else {
+        list.push({ src: reader.result, name: file.name });
+        activeEvidenceIndex = 0;
+      }
+      renderPanelEvidenceUI(panelIndex);
+      qs('mapInfo').textContent = `Evidencia reemplazada: ${file.name} para ${buildPanel(panelIndex).code}.`;
+    };
+    reader.readAsDataURL(file);
+  }
+  function buildPanel(index){
+    const dept = DEPARTMENTS[deptCodes[index]];
+    const sc = statusCodes[index];
+    const watts = capacities[index % capacities.length];
+    return {
+      index,
+      code: panelCode(index),
+      status: statuses[sc],
+      statusLabel: statusLabel(sc),
+      department: dept[0],
+      province: dept[1],
+      district: dept[2],
+      latitude: latitudes[index],
+      longitude: longitudes[index],
+      technology: panelType[index % panelType.length],
+      capacity: `${watts} Wp`,
+      inverter: `${(1 + (index%3))} kVA`,
+      battery: `${(2 + (index%4))} x 100 Ah`,
+      installationDate: installDate(index),
+      maintenanceDate: maintenanceDate(index),
+      sync: index % 6 === 0 ? 'Pendiente de sincronización' : 'Sincronizado',
+      opex: sc === 2 ? 'Pago bloqueado por estado Inactivo' : 'Pago OPEX habilitado',
+      observation: sc === 0 ? 'Equipo operativo sin incidencias críticas.' : sc === 1 ? 'Equipo con observación, requiere inspección preventiva.' : 'Equipo inoperativo y marcado como Inactivo.'
+    };
+  }
+  function setActiveUtil(id){
+    document.querySelectorAll('.foto-internal-utils .util-btn').forEach(b => b.classList.remove('active'));
+    qs(id)?.classList.add('active');
+  }
+  function renderEvidenceThumb(panel, label){
+    return `<div class="thumb-card"><img src="${evidenceImage(panel)}" alt="${panel.code}"><span>${label}</span></div>`;
+  }
+  function renderSummary(selection, centerLatLng){
+    const total = selection.length;
+    const op = selection.filter(p => p.status === 'operativo').length;
+    const ob = selection.filter(p => p.status === 'observado').length;
+    const ina = selection.filter(p => p.status === 'inactivo').length;
+    const beneficiaries = total;
+    const totalLiquidacion = total * 2100;
+    const progress = [
+      ['Paneles', total],
+      ['Operativos', op],
+      ['Observados', ob],
+      ['Inactivos', ina],
+      ['Beneficiarios', beneficiaries]
+    ];
+    const max = Math.max(total,1);
+    const depts = [...new Set(selection.map(p => p.department))].slice(0,4).join(', ');
+    qs('summaryCard').style.display = 'block';
+    qs('summaryContent').innerHTML = `
+      <div class="summary-grid">
+        <div class="summary-kpi"><span>Paneles</span><b>${total}</b></div>
+        <div class="summary-kpi"><span>Operativos</span><b>${op}</b></div>
+        <div class="summary-kpi"><span>Observados</span><b>${ob}</b></div>
+        <div class="summary-kpi"><span>Inactivos</span><b>${ina}</b></div>
+        <div class="summary-kpi"><span>Beneficiarios</span><b>${beneficiaries}</b></div>
+        <div class="summary-kpi"><span>Radio</span><b>${Math.round(circleSelectionRadius/1000)} km</b></div>
+      </div>
+      <div class="summary-total">
+        <div class="summary-total-row"><span>Total liquidaciones</span><b>S/ ${totalLiquidacion.toLocaleString('es-PE')}</b></div>
+        <div class="summary-total-row"><span>Zonas incluidas</span><b>${depts || 'Sin datos'}</b></div>
+        <div class="summary-total-row"><span>Centro</span><b>${formatCoord(centerLatLng.lat)}, ${formatCoord(centerLatLng.lng)}</b></div>
+      </div>
+      <div class="progress-list">
+        ${progress.map(([name,val]) => `<div class="progress-row"><span>${name}</span><div class="progress-track"><div class="progress-fill" style="width:${(val/max)*100}%"></div></div><b>${val}</b></div>`).join('')}
+      </div>`;
+  }
+  function drawCircularSelection(latlng){
+    circleDraftActive = false;
+    if(selectionMarker){ map.removeLayer(selectionMarker); selectionMarker = null; }
+    selectionCenterLatLng = latlng;
+    if(selectionCircle){ map.removeLayer(selectionCircle); }
+    selectionCircle = L.circle(latlng, {radius: circleSelectionRadius, className:'selection-ring'}).addTo(map);
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); }
+    selectionCenterMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="center-marker"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(map);
+    multiSelection = [];
+    for(let i=0; i<TOTAL_PANELS; i++){
+      const statusName = statuses[statusCodes[i]];
+      if((statusName==='operativo' && !showState.operativo) || (statusName==='observado' && !showState.observado) || (statusName==='inactivo' && !showState.inactivo)) continue;
+      const dist = map.distance(latlng, [latitudes[i], longitudes[i]]);
+      if(dist <= circleSelectionRadius) multiSelection.push(buildPanel(i));
+    }
+    solarLayer.setSelected(null);
+    qs('radiusValue').textContent = `${Math.round(circleSelectionRadius/1000)} km`;
+    qs('panelTitle').textContent = 'Selección circular';
+    qs('panelSubtitle').innerHTML = `${multiSelection.length} paneles dentro del área &nbsp; <span class="badge b-ok">Circular</span>`;
+    qs('selectionHint').textContent = `Selección circular aplicada. Se recargó la información de ${multiSelection.length} paneles fotovoltaicos dentro del área seleccionada.`;
+    qs('toolHint').textContent = 'Modo actual: selección circular. Haz clic en el mapa para mover el centro del círculo o ajusta el radio variable.';
+    qs('detailsTitle').textContent = 'Objeto seleccionado';
+    qs('selectionModeBadge').textContent = 'Circular';
+    const op = multiSelection.filter(p => p.status === 'operativo').length;
+    const ob = multiSelection.filter(p => p.status === 'observado').length;
+    const ina = multiSelection.filter(p => p.status === 'inactivo').length;
+    qs('panelDetails').innerHTML = `
+      <div class="detail-row"><span>Origen</span><b>Dedo de selección</b></div>
+      <div class="detail-row"><span>Área de selección</span><b>Objeto circular</b></div>
+      <div class="detail-row"><span>Centro marcado</span><b>Sí</b></div>
+      <div class="detail-row"><span>Paneles</span><b>${multiSelection.length}</b></div>
+      <div class="detail-row"><span>Operativos</span><b>${op}</b></div>
+      <div class="detail-row"><span>Observados</span><b>${ob}</b></div>
+      <div class="detail-row"><span>Inactivos</span><b>${ina}</b></div>
+      <div class="detail-row"><span>Radio</span><b>${Math.round(circleSelectionRadius/1000)} km</b></div>
+      <div class="detail-row"><span>Centro</span><b>${formatCoord(latlng.lat)}, ${formatCoord(latlng.lng)}</b></div>`;
+    qs('evidenceSingleWrap').style.display = 'none';
+    qs('evidenceGallery').style.display = 'grid';
+    qs('evidenceSubtitle').textContent = 'Mínimo 3 fotos obligatorias';
+    qs('evidenceCountBadge').textContent = `${Math.min(3, multiSelection.length)}/3 fotos`;
+    qs('evidenceGallery').innerHTML = (multiSelection.slice(0,3).length ? multiSelection.slice(0,3) : [buildPanel(0),buildPanel(1),buildPanel(2)]).map((p,idx) => renderEvidenceThumb(p, idx===0 ? 'Inspección' : idx===1 ? 'Vista general' : 'Instalación')).join('');
+    renderSummary(multiSelection, latlng);
+    qs('mapInfo').textContent = `Selección circular activa con centro marcado y radio de ${Math.round(circleSelectionRadius/1000)} km. El panel derecho fue recargado con el resumen, evidencia y métricas de la selección.`;
+    updateFotoReportStatus();
+  }
+  function previewCircularSelection(latlng, radius){
+    selectionCenterLatLng = latlng;
+    circleSelectionRadius = Math.max(1000, radius || circleSelectionRadius || 65000);
+    if(selectionCircle){ map.removeLayer(selectionCircle); }
+    selectionCircle = L.circle(latlng, {radius: circleSelectionRadius, className:'selection-ring'}).addTo(map);
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); }
+    selectionCenterMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="center-marker"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(map);
+    qs('radiusValue').textContent = `${Math.round(circleSelectionRadius/1000)} km`;
+  }
+  function startCircleDraft(latlng){
+    circleDraftActive = true;
+    previewCircularSelection(latlng, circleSelectionRadius);
+    qs('toolHint').textContent = 'Círculo activo: primer clic centro, ajuste el radio y presione Finalizar.';
+    qs('mapInfo').textContent = 'Centro definido. Mueva el mouse para ajustar el radio y presione Finalizar.';
+  }
+  function handleCircleToolClick(latlng){
+    if(!selectionCenterLatLng || !circleDraftActive){
+      startCircleDraft(latlng);
+      return;
+    }
+    circleSelectionRadius = Math.max(1000, map.distance(selectionCenterLatLng, latlng));
+    drawCircularSelection(selectionCenterLatLng);
+  }
+  function updateCircleDraft(latlng){
+    if(mapTool !== 'circle' || !circleDraftActive || !selectionCenterLatLng) return;
+    previewCircularSelection(selectionCenterLatLng, map.distance(selectionCenterLatLng, latlng));
+  }
+  function finalizeCircleDraft(){
+    if(selectionCenterLatLng){
+      drawCircularSelection(selectionCenterLatLng);
+    } else {
+      qs('mapInfo').textContent = 'Primero haz clic en el mapa para marcar el centro de la selección circular.';
+      qs('toolHint').textContent = 'Falta marcar el centro. Haz clic en el mapa y luego presiona Finalizar.';
+    }
+  }
+  function clearCircularSelection(){
+    if(selectionCircle){ map.removeLayer(selectionCircle); selectionCircle = null; }
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); selectionCenterMarker = null; }
+    selectionCenterLatLng = null;
+    circleDraftActive = false;
+    multiSelection = [];
+  }
+  function setPinModalOpen(open){
+    qs('pinModal').classList.toggle('open', open);
+  }
+  function openPinModal(latlng){
+    draftPinLatLng = latlng;
+    if(draftPinMarker){ map.removeLayer(draftPinMarker); }
+    draftPinMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="pin-marker"></div>', iconSize:[18,18], iconAnchor:[9,18]})}).addTo(map);
+    qs('pinLat').value = formatCoord(latlng.lat);
+    qs('pinLng').value = formatCoord(latlng.lng);
+    qs('pinTechnology').value = 'Bifacial';
+    qs('pinCapacity').value = '550 Wp';
+    qs('pinInverter').value = '3 kVA';
+    qs('pinBattery').value = '5 x 100 Ah';
+    qs('pinInstallation').value = '12/12/2025';
+    qs('pinMaintenance').value = '10/06/2026';
+    qs('pinSync').value = 'Sincronizado';
+    qs('pinOpex').value = 'Pago OPEX habilitado';
+    qs('pinObservation').value = 'Equipo operativo sin incidencias críticas.';
+    qs('pinStatusMsg').textContent = 'Punto capturado. Completa la información técnica y envíala a un usuario supervisor.';
+    qs('pinSendStatus').value = 'Pendiente de envío';
+    qs('mapInfo').textContent = `Tachuela colocada en ${formatCoord(latlng.lat)}, ${formatCoord(latlng.lng)}. Completa el modal para registrar el punto y enviarlo a supervisión.`;
+    setPinModalOpen(true);
+  }
+  function closePinModal(){
+    setPinModalOpen(false);
+  }
+  function savePinDraft(){
+    applyPinLocationUpdate('Corrección georreferenciada · borrador guardado', 'Usuario operador');
+    qs('pinSendStatus').value = 'Borrador guardado';
+    qs('pinStatusMsg').textContent = 'Borrador guardado correctamente para revisión posterior. El cambio de ubicación quedó registrado en la bitácora.';
+    qs('mapInfo').textContent = 'Borrador del nuevo punto fotovoltaico guardado. Bitácora de ubicación actualizada.';
+  }
+  function sendPinForSupervision(){
+    const supervisor = qs('pinSupervisor').value;
+    if(!supervisor){
+      qs('pinStatusMsg').textContent = 'Selecciona un usuario supervisor antes de enviar.';
+      return;
+    }
+    applyPinLocationUpdate(`Validación y envío a ${supervisor}`, supervisor);
+    qs('pinSendStatus').value = `Enviado a ${supervisor}`;
+    qs('pinStatusMsg').textContent = `Registro enviado a ${supervisor} para su supervisión. Cambio de ubicación registrado en bitácora.`;
+    qs('mapInfo').textContent = `El nuevo punto fotovoltaico fue enviado a ${supervisor} para supervisión.`;
+  }
+
+  function setDgerModalOpen(open){
+    qs('dgerModal').classList.toggle('open', open);
+  }
+  function openDgerModal(){
+    setDgerModalOpen(true);
+    qs('toolHint').textContent = 'Modo actual: procesamiento de resoluciones DGER.';
+    qs('mapInfo').textContent = 'Carga el Excel DGER para calcular morosidad, IGV y cargos RER.';
+  }
+  function closeDgerModal(){
+    setDgerModalOpen(false);
+  }
+  function dgerFileChosen(){
+    const input = qs('dgerExcelInput');
+    const file = input.files && input.files[0];
+    qs('dgerFileName').value = file ? file.name : 'Ningún archivo seleccionado';
+    qs('dgerStatusMsg').textContent = file ? `Archivo listo para procesar: ${file.name}` : 'Selecciona un archivo Excel para iniciar el procesamiento.';
+  }
+  function processDgerExcel(){
+    const input = qs('dgerExcelInput');
+    const file = input.files && input.files[0];
+    if(!file){
+      qs('dgerStatusMsg').textContent = 'Primero selecciona un archivo Excel DGER.';
+      return;
+    }
+    const base = Math.max(18, file.name.length * 3);
+    const baseMor = base * 1250;
+    const igv = Math.round(baseMor * FOTO_BUSINESS.IGV_RATE);
+    const mor = baseMor + igv;
+    const rer = Math.round(baseMor * FOTO_BUSINESS.RER_RATE);
+    const rows = base + 12;
+    dgerProcessedRows = Array.from({length:Math.min(rows,12)}, (_,i) => {
+      const baseRow = 320 + ((i * 37 + base) % 280);
+      const igvRow = Math.round(baseRow * FOTO_BUSINESS.IGV_RATE);
+      const rerRow = Math.round(baseRow * FOTO_BUSINESS.RER_RATE);
+      return {resolucion:`DGER-${2026}-${String(i+1).padStart(4,'0')}`, sistema:`PFV-${String((i*17+1)).padStart(6,'0')}`, empresa:['ADINELSA','ELECTRO SUR ESTE','ELECTRO UCAYALI'][i%3], base:baseRow, igv:igvRow, rer:rerRow, total:baseRow+igvRow+rerRow};
+    });
+    qs('dgerMorosidad').textContent = `S/ ${mor.toLocaleString('es-PE')}`;
+    qs('dgerIgv').textContent = `S/ ${igv.toLocaleString('es-PE')}`;
+    qs('dgerRer').textContent = `S/ ${rer.toLocaleString('es-PE')}`;
+    qs('dgerRows').textContent = String(rows);
+    qs('dgerDetailTable').innerHTML = `<table style="width:100%;min-width:680px;border-collapse:separate;border-spacing:0 6px"><thead><tr><th style="text-align:left;color:#93a4c7">Resolución</th><th style="text-align:left;color:#93a4c7">Sistema</th><th style="text-align:left;color:#93a4c7">Empresa</th><th style="text-align:right;color:#93a4c7">Morosidad</th><th style="text-align:right;color:#93a4c7">IGV</th><th style="text-align:right;color:#93a4c7">RER</th><th style="text-align:right;color:#93a4c7">Total</th></tr></thead><tbody>${dgerProcessedRows.map(r=>`<tr><td>${r.resolucion}</td><td>${r.sistema}</td><td>${r.empresa}</td><td style="text-align:right">S/ ${r.base.toLocaleString('es-PE')}</td><td style="text-align:right">S/ ${r.igv.toLocaleString('es-PE')}</td><td style="text-align:right">S/ ${r.rer.toLocaleString('es-PE')}</td><td style="text-align:right"><b>S/ ${r.total.toLocaleString('es-PE')}</b></td></tr>`).join('')}</tbody></table>`;
+    qs('exportDgerReportBtn').disabled = false;
+    qs('dgerStatusMsg').textContent = `Procesamiento completado. Morosidad, IGV (18%) y cargo RER calculados automáticamente a partir de ${file.name}.`;
+    qs('mapInfo').textContent = `Excel DGER procesado: ${file.name}. Morosidad, IGV y cargo RER calculados según reglas de negocio.`;
+  }
+  function exportDgerTechnicalReport(){
+    if(!dgerProcessedRows.length || !window.XLSX){
+      qs('dgerStatusMsg').textContent = 'Procese primero un archivo DGER para generar el reporte técnico.';
+      return;
+    }
+    const rows = dgerProcessedRows.map(r => ({'Resolución DGER':r.resolucion,'Sistema':r.sistema,'Empresa':r.empresa,'Morosidad S/':r.base,'IGV 18% S/':r.igv,'Cargo RER S/':r.rer,'Total transferencia S/':r.total}));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Detalle DGER');
+    XLSX.writeFile(wb, 'Reporte_tecnico_instalaciones_DGER.xlsx');
+    qs('dgerStatusMsg').textContent = 'Reporte técnico de sustento DGER generado en Excel.';
+  }
+  const FOTO_BUSINESS = {
+    IGV_RATE: 0.18,
+    RER_RATE: 0.24,
+    OPEX_TARIFF: 175,
+    STATUS_MONTHS: { operativo: 1, observado: 3, inactivo: 6 },
+    STATUS_FACTOR: { operativo: 0.35, observado: 1, inactivo: 1.25 }
+  };
+  function fotoMoney(value){
+    return `S/ ${Math.round(value).toLocaleString('es-PE')}`;
+  }
+  function fotoCapacityMultiplier(panel){
+    const watts = parseInt(String(panel.capacity || '550'), 10) || 550;
+    if(watts >= 550) return 1.15;
+    if(watts >= 450) return 1;
+    return 0.85;
+  }
+  function fotoReportFinancial(panel){
+    const months = FOTO_BUSINESS.STATUS_MONTHS[panel.status] || 1;
+    const factor = FOTO_BUSINESS.STATUS_FACTOR[panel.status] || 1;
+    const tarifaOpex = Math.round(FOTO_BUSINESS.OPEX_TARIFF * fotoCapacityMultiplier(panel));
+    const baseMorosidad = Math.round(tarifaOpex * months * factor);
+    const igv = Math.round(baseMorosidad * FOTO_BUSINESS.IGV_RATE);
+    const morosidad = baseMorosidad + igv;
+    const rer = Math.round(baseMorosidad * FOTO_BUSINESS.RER_RATE);
+    const totalSustento = morosidad + rer;
+    const rule = panel.status === 'operativo'
+      ? 'Regla operativo: 1 periodo referencial · tarifa OPEX ajustada por capacidad · factor 35%.'
+      : panel.status === 'observado'
+      ? 'Regla observado: 3 periodos adeudados · IGV 18% sobre base · cargo RER 24% sobre base.'
+      : 'Regla inactivo: 6 periodos adeudados · factor 125% · OPEX bloqueado · IGV 18% · RER 24%.';
+    return {
+      tarifaOpex,
+      periodos: months,
+      factorEstado: factor,
+      baseMorosidad,
+      igv,
+      igvRate: FOTO_BUSINESS.IGV_RATE,
+      morosidad,
+      rer,
+      totalSustento,
+      liquidacion: 2100,
+      rule
+    };
+  }
+  function fotoMorosityRow(label, value, total = false){
+    return `<div class="foto-morosity-row${total ? ' total' : ''}"><span>${label}</span><b>${value}</b></div>`;
+  }
+  function renderFotoMorosityDetail(){
+    const box = qs('fotoMorosityDetail');
+    const rules = qs('fotoMorosityRules');
+    const badge = qs('fotoMorosityBadge');
+    if(!box || !rules) return;
+    const ctx = getFotoReportContext();
+    if(!ctx){
+      box.innerHTML = [
+        fotoMorosityRow('Tarifa OPEX mensual', '—'),
+        fotoMorosityRow('Periodos adeudados', '—'),
+        fotoMorosityRow('Base morosidad', '—'),
+        fotoMorosityRow('IGV (18%)', '—'),
+        fotoMorosityRow('Morosidad total', '—'),
+        fotoMorosityRow('Cargo RER (24%)', '—'),
+        fotoMorosityRow('Total sustento transferencia', '—', true)
+      ].join('');
+      rules.textContent = 'Seleccione un panel en el mapa para calcular morosidad e IGV.';
+      if(badge) badge.textContent = 'Automático';
+      return;
+    }
+    if(ctx.panels.length === 1){
+      const fin = fotoReportFinancial(ctx.panels[0]);
+      box.innerHTML = [
+        fotoMorosityRow('Tarifa OPEX mensual', fotoMoney(fin.tarifaOpex)),
+        fotoMorosityRow('Periodos adeudados', `${fin.periodos} mes(es) · factor ${Math.round(fin.factorEstado * 100)}%`),
+        fotoMorosityRow('Base morosidad', fotoMoney(fin.baseMorosidad)),
+        fotoMorosityRow(`IGV (${Math.round(fin.igvRate * 100)}%)`, fotoMoney(fin.igv)),
+        fotoMorosityRow('Morosidad total', fotoMoney(fin.morosidad)),
+        fotoMorosityRow('Cargo RER (24%)', fotoMoney(fin.rer)),
+        fotoMorosityRow('Total sustento transferencia', fotoMoney(fin.totalSustento), true)
+      ].join('');
+      rules.textContent = fin.rule;
+      if(badge) badge.textContent = ctx.panels[0].statusLabel;
+      return;
+    }
+    const totals = ctx.panels.reduce((acc, panel) => {
+      const fin = fotoReportFinancial(panel);
+      acc.base += fin.baseMorosidad;
+      acc.igv += fin.igv;
+      acc.mor += fin.morosidad;
+      acc.rer += fin.rer;
+      acc.total += fin.totalSustento;
+      acc.periodos += fin.periodos;
+      return acc;
+    }, { base: 0, igv: 0, mor: 0, rer: 0, total: 0, periodos: 0 });
+    const avgPeriodos = Math.round(totals.periodos / ctx.panels.length);
+    box.innerHTML = [
+      fotoMorosityRow('Paneles en selección', String(ctx.panels.length)),
+      fotoMorosityRow('Promedio periodos adeudados', `${avgPeriodos} mes(es)`),
+      fotoMorosityRow('Base morosidad acumulada', fotoMoney(totals.base)),
+      fotoMorosityRow('IGV acumulado (18%)', fotoMoney(totals.igv)),
+      fotoMorosityRow('Morosidad total acumulada', fotoMoney(totals.mor)),
+      fotoMorosityRow('Cargo RER acumulado (24%)', fotoMoney(totals.rer)),
+      fotoMorosityRow('Total sustento transferencia', fotoMoney(totals.total), true)
+    ].join('');
+    rules.textContent = `Selección circular: cálculo automático por panel según estado (operativo 1 mes, observado 3 meses, inactivo 6 meses) · IGV 18% · RER 24%.`;
+    if(badge) badge.textContent = 'Circular';
+  }
+  function getFotoReportContext(){
+    if(multiSelection && multiSelection.length){
+      return {
+        panels: multiSelection.slice(),
+        mode: 'Circular',
+        label: `${multiSelection.length} paneles · radio ${Math.round(circleSelectionRadius / 1000)} km`
+      };
+    }
+    if(selectedIndex !== null && selectedIndex !== undefined){
+      const panel = buildPanel(selectedIndex);
+      return { panels: [panel], mode: 'Individual', label: panel.code };
+    }
+    return null;
+  }
+  function fotoReportTotals(panels){
+    return panels.reduce((acc, panel) => {
+      const fin = fotoReportFinancial(panel);
+      acc.base += fin.baseMorosidad;
+      acc.igv += fin.igv;
+      acc.mor += fin.morosidad;
+      acc.rer += fin.rer;
+      acc.total += fin.totalSustento;
+      return acc;
+    }, { base: 0, igv: 0, mor: 0, rer: 0, total: 0 });
+  }
+  function fotoReportFileToken(ctx){
+    const base = ctx.panels[0]?.code || 'PFV';
+    return String(base).replace(/[^\w-]+/g, '_');
+  }
+  function updateFotoReportStatus(){
+    const meta = qs('fotoReportMeta');
+    renderFotoMorosityDetail();
+    if(!meta) return;
+    const ctx = getFotoReportContext();
+    if(!ctx){
+      meta.textContent = 'Seleccione un panel en el mapa para habilitar la generación.';
+      return;
+    }
+    const fin = fotoReportTotals(ctx.panels);
+    meta.textContent = `${ctx.mode}: ${ctx.label} · ${ctx.panels.length} registro(s) · Morosidad ${fotoMoney(fin.mor)} · IGV ${fotoMoney(fin.igv)} · RER ${fotoMoney(fin.rer)}`;
+  }
+  function openFotoReportModal(){
+    const ctx = getFotoReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'Seleccione un panel o una selección circular antes de generar el reporte.';
+      return;
+    }
+    const fin = fotoReportTotals(ctx.panels);
+    qs('fotoReportModalMode').textContent = ctx.mode;
+    qs('fotoReportModalCount').textContent = String(ctx.panels.length);
+    qs('fotoReportModalRef').textContent = ctx.label;
+    qs('fotoReportModalBase').textContent = fotoMoney(fin.base);
+    qs('fotoReportModalIgv').textContent = fotoMoney(fin.igv);
+    qs('fotoReportModalMor').textContent = fotoMoney(fin.mor);
+    qs('fotoReportModalRer').textContent = fotoMoney(fin.rer);
+    qs('fotoReportModalTotal').textContent = fotoMoney(fin.total);
+    qs('fotoReportModalStatus').textContent = 'El reporte incluirá el detalle de morosidad, IGV (18%), cargo RER (24%) y ficha técnica para transferencia.';
+    qs('fotoReportModal').classList.add('open');
+  }
+  function closeFotoReportModal(){
+    qs('fotoReportModal')?.classList.remove('open');
+  }
+  function exportFotoReportXlsx(){
+    const ctx = getFotoReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'No hay panel seleccionado para generar el reporte.';
+      return;
+    }
+    if(!window.XLSX){
+      qs('mapInfo').textContent = 'Librería Excel no disponible. Verifique la conexión e intente nuevamente.';
+      return;
+    }
+    const now = new Date().toLocaleString('es-PE');
+    const fin = fotoReportTotals(ctx.panels);
+    const wb = XLSX.utils.book_new();
+    const cover = [
+      ['REPORTE TÉCNICO DE SUSTENTO PARA TRANSFERENCIA'],
+      ['Módulo', 'Programa Fotovoltaico · SATCONTROL'],
+      ['Tipo de reporte', 'Generación de reporte técnico de sustento para transferencia'],
+      ['Modo de selección', ctx.mode],
+      ['Referencia', ctx.label],
+      ['Fecha de generación', now],
+      ['Total registros', ctx.panels.length],
+      ['Base morosidad total (S/)', fin.base],
+      ['IGV total 18% (S/)', fin.igv],
+      ['Morosidad total (S/)', fin.mor],
+      ['Cargo RER total 24% (S/)', fin.rer],
+      ['Total sustento (S/)', fin.total]
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cover), 'Portada');
+    const summaryRows = [
+      ['Total paneles', ctx.panels.length],
+      ['Operativos', ctx.panels.filter(p => p.status === 'operativo').length],
+      ['Observados', ctx.panels.filter(p => p.status === 'observado').length],
+      ['Inactivos', ctx.panels.filter(p => p.status === 'inactivo').length],
+      ['Base morosidad (S/)', fin.base],
+      ['IGV 18% (S/)', fin.igv],
+      ['Morosidad total (S/)', fin.mor],
+      ['Cargo RER 24% (S/)', fin.rer],
+      ['Total sustento (S/)', fin.total]
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Indicador', 'Valor'], ...summaryRows]), 'Resumen');
+    const morosityHeaders = ['Código', 'Estado', 'Tarifa OPEX', 'Periodos', 'Base morosidad (S/)', 'IGV 18% (S/)', 'Morosidad total (S/)', 'Cargo RER 24% (S/)', 'Total sustento (S/)', 'Regla aplicada'];
+    const morosityRows = ctx.panels.map(panel => {
+      const f = fotoReportFinancial(panel);
+      return [panel.code, panel.statusLabel, f.tarifaOpex, f.periodos, f.baseMorosidad, f.igv, f.morosidad, f.rer, f.totalSustento, f.rule];
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([morosityHeaders, ...morosityRows]), 'Morosidad e IGV');
+    const detailHeaders = ['Código', 'Estado', 'Departamento', 'Provincia', 'Distrito', 'Latitud', 'Longitud', 'Tecnología', 'Capacidad', 'Inversor', 'Batería', 'Instalación', 'Mantenimiento', 'Sincronización', 'OPEX', 'Base morosidad (S/)', 'IGV (S/)', 'Morosidad total (S/)', 'Cargo RER (S/)', 'Total sustento (S/)', 'Observación'];
+    const detailRows = ctx.panels.map(panel => {
+      const f = fotoReportFinancial(panel);
+      const evidenceCount = getPanelEvidenceList(panel.index).length;
+      return [
+        panel.code, panel.statusLabel, panel.department, panel.province, panel.district,
+        panel.latitude, panel.longitude, panel.technology, panel.capacity, panel.inverter, panel.battery,
+        panel.installationDate, panel.maintenanceDate, panel.sync, panel.opex,
+        f.baseMorosidad, f.igv, f.morosidad, f.rer, f.totalSustento,
+        `${panel.observation}${evidenceCount ? ` · ${evidenceCount} evidencia(s)` : ''}`
+      ];
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([detailHeaders, ...detailRows]), 'Detalle técnico');
+    XLSX.writeFile(wb, `Reporte_sustento_Fotovoltaico_${fotoReportFileToken(ctx)}.xlsx`);
+    closeFotoReportModal();
+    qs('mapInfo').textContent = `Reporte técnico de sustento generado en Excel (.xlsx) para ${ctx.label}.`;
+  }
+  function exportFotoReportPdf(){
+    const ctx = getFotoReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'No hay panel seleccionado para generar el reporte.';
+      return;
+    }
+    const { jsPDF } = window.jspdf || {};
+    if(!jsPDF){
+      qs('mapInfo').textContent = 'Librería PDF no disponible. Verifique la conexión e intente nuevamente.';
+      return;
+    }
+    const now = new Date().toLocaleString('es-PE');
+    const fin = fotoReportTotals(ctx.panels);
+    const landscape = ctx.panels.length > 1;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: landscape ? 'landscape' : 'portrait' });
+    const pageW = doc.internal.pageSize.getWidth();
+    doc.setFillColor(15, 118, 110);
+    doc.rect(0, 0, pageW, 64, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15);
+    doc.text('Programa Fotovoltaico · SATCONTROL', 40, 28);
+    doc.setFontSize(10);
+    doc.text('Generación de reporte técnico de sustento para transferencia', 40, 46);
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.text(`${ctx.mode} · ${ctx.label} · ${ctx.panels.length} registro(s) · ${now}`, 40, 84);
+    doc.text(`Base morosidad: ${fotoMoney(fin.base)} · IGV 18%: ${fotoMoney(fin.igv)} · Morosidad: ${fotoMoney(fin.mor)} · RER 24%: ${fotoMoney(fin.rer)} · Total: ${fotoMoney(fin.total)}`, 40, 98);
+    const head = [['Código', 'Estado', 'Base', 'IGV 18%', 'Morosidad', 'RER 24%', 'Total']];
+    const body = ctx.panels.map(panel => {
+      const f = fotoReportFinancial(panel);
+      return [
+        panel.code,
+        panel.statusLabel,
+        fotoMoney(f.baseMorosidad),
+        fotoMoney(f.igv),
+        fotoMoney(f.morosidad),
+        fotoMoney(f.rer),
+        fotoMoney(f.totalSustento)
+      ];
+    });
+    doc.autoTable({
+      head,
+      body,
+      startY: 112,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 5 },
+      headStyles: { fillColor: [15, 118, 110], textColor: [255, 255, 255] }
+    });
+    let y = doc.lastAutoTable.finalY + 18;
+    ctx.panels.slice(0, landscape ? 3 : 2).forEach(panel => {
+      if(y > doc.internal.pageSize.getHeight() - 120){
+        doc.addPage();
+        y = 40;
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Detalle técnico · ${panel.code}`, 40, y);
+      y += 14;
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      const f = fotoReportFinancial(panel);
+      const lines = [
+        `Ubicación: ${panel.department} · ${panel.province} · ${panel.district}`,
+        `Coordenadas: ${formatCoord(panel.latitude)}, ${formatCoord(panel.longitude)}`,
+        `Tecnología: ${panel.technology} · Inversor: ${panel.inverter} · Batería: ${panel.battery}`,
+        `Instalación: ${panel.installationDate} · Mantenimiento: ${panel.maintenanceDate}`,
+        `Sincronización: ${panel.sync} · OPEX: ${panel.opex}`,
+        `Morosidad: base ${fotoMoney(f.baseMorosidad)} · IGV ${fotoMoney(f.igv)} · total ${fotoMoney(f.morosidad)} · RER ${fotoMoney(f.rer)}`,
+        `Observación: ${panel.observation}`
+      ];
+      lines.forEach(line => {
+        doc.text(line, 40, y, { maxWidth: pageW - 80 });
+        y += 12;
+      });
+      y += 8;
+    });
+    doc.save(`Reporte_sustento_Fotovoltaico_${fotoReportFileToken(ctx)}.pdf`);
+    closeFotoReportModal();
+    qs('mapInfo').textContent = `Reporte técnico de sustento generado en PDF para ${ctx.label}.`;
+  }
+  let selectionMarker = null;
+  function selectPanel(index, pan = false){
+    clearCircularSelection();
+    selectedIndex = index;
+    const panel = buildPanel(index);
+    qs('panelTitle').textContent = panel.code;
+    qs('panelSubtitle').innerHTML = `${panel.department} · ${panel.province} · ${panel.district} &nbsp; ${statusBadge(statusCodes[index])}`;
+    qs('selectionHint').textContent = `${panel.code} seleccionado en ${panel.department}. Se ha cargado la ficha técnica y la evidencia fotográfica en el panel derecho.`;
+    qs('toolHint').textContent = mapTool === 'circle' ? 'Modo actual: selección circular. Haz clic en el mapa para crear un área.' : 'Modo actual: selección individual de paneles.';
+    qs('detailsTitle').textContent = 'Información del panel seleccionado';
+    qs('selectionModeBadge').textContent = 'Individual';
+    qs('summaryCard').style.display = 'none';
+    qs('evidenceSingleWrap').style.display = 'block';
+    qs('evidenceGallery').style.display = 'none';
+    qs('evidenceSubtitle').textContent = 'Mínimo 1 foto visible';
+    qs('evidenceCountBadge').textContent = '1/1 foto';
+    qs('panelDetails').innerHTML = `
+      <div class="detail-row"><span>Código</span><b>${panel.code}</b></div>
+      ${fotoStatusDetailHtml(index, statusCodes[index])}
+      <div class="detail-row"><span>Departamento</span><b>${panel.department}</b></div>
+      <div class="detail-row"><span>Provincia</span><b>${panel.province}</b></div>
+      <div class="detail-row"><span>Distrito</span><b>${panel.district}</b></div>
+      <div class="detail-row"><span>Coordenadas</span><b>${formatCoord(panel.latitude)}, ${formatCoord(panel.longitude)}</b></div>
+      <div class="detail-row"><span>Tecnología</span><b>${panel.technology}</b></div>
+      <div class="detail-row"><span>Capacidad</span><b>${panel.capacity}</b></div>
+      <div class="detail-row"><span>Inversor</span><b>${panel.inverter}</b></div>
+      <div class="detail-row"><span>Batería</span><b>${panel.battery}</b></div>
+      <div class="detail-row"><span>Instalación</span><b>${panel.installationDate}</b></div>
+      <div class="detail-row"><span>Último mantenimiento</span><b>${panel.maintenanceDate}</b></div>
+      <div class="detail-row"><span>Sincronización</span><b>${panel.sync}</b></div>
+      <div class="detail-row"><span>OPEX</span><b>${panel.opex}</b></div>
+      <div class="detail-row"><span>Observación</span><b>${panel.observation}</b></div>`;
+    bindFotoStatusToggleBtn(index);
+    activeEvidenceIndex = 0;
+    renderPanelEvidenceUI(index);
+    if(mapTool !== 'circle'){ qs('circleConfigPanel').classList.remove('open'); }
+    qs('mapInfo').textContent = `Seleccionado ${panel.code} · ${panel.statusLabel} · ${panel.department}. El panel derecho muestra toda la información del panel solar y su evidencia.`;
+    solarLayer.setSelected(index);
+    if(selectionMarker){ map.removeLayer(selectionMarker); }
+    const html = `<div class="panel-icon-marker" style="background:${statusCodes[index]===0?'#22c55e':statusCodes[index]===1?'#f59e0b':'#ef4444'}"></div>`;
+    selectionMarker = L.marker([panel.latitude, panel.longitude], {icon:L.divIcon({className:'', html, iconSize:[14,10], iconAnchor:[7,5]})}).addTo(map);
+    selectionMarker.bindPopup(`<b>${panel.code}</b><br>${panel.department} · ${panel.district}<br>Estado: ${panel.statusLabel}`).openPopup();
+    if(pan) map.panTo([panel.latitude, panel.longitude]);
+    updateFotoReportStatus();
+  }
+
+  function findCodeIndex(text){
+    const match = String(text || '').trim().match(/PFV-(\d{1,6})/i);
+    if(!match) return -1;
+    const idx = parseInt(match[1], 10) - 1;
+    return (idx >= 0 && idx < TOTAL_PANELS) ? idx : -1;
+  }
+
+  function applyFilters(){
+    const filter = qs('statusFilter').value;
+    showState.operativo = qs('showOperativo').checked;
+    showState.observado = qs('showObservado').checked;
+    showState.inactivo = qs('showInactivo').checked;
+    if(filter !== 'all'){
+      showState.operativo = filter === 'operativo';
+      showState.observado = filter === 'observado';
+      showState.inactivo = filter === 'inactivo';
+    }
+    solarLayer.redraw();
+  }
+
+  qs('refreshBtn').addEventListener('click', () => {
+    generatePanelPoints(Date.now() % 1000000);
+    solarLayer.redraw();
+    selectPanel(Math.floor(Math.random() * TOTAL_PANELS));
+  });
+  qs('statusFilter').addEventListener('change', applyFilters);
+  ['showOperativo','showObservado','showInactivo'].forEach(id => qs(id).addEventListener('change', applyFilters));
+  qs('zoomPeruBtn').addEventListener('click', () => fitPeruOverview(true));
+  qs('randomSelectBtn').addEventListener('click', () => selectPanel(Math.floor(Math.random() * TOTAL_PANELS), true));
+  qs('mapSearchBtn').addEventListener('click', () => {
+    const idx = findCodeIndex(qs('mapSearch').value || qs('codeSearch').value);
+    if(idx >= 0) selectPanel(idx, true);
+  });
+  qs('mapSearch').addEventListener('keydown', e => { if(e.key === 'Enter') qs('mapSearchBtn').click(); });
+  qs('codeSearch').addEventListener('keydown', e => { if(e.key === 'Enter') qs('mapSearchBtn').click(); });
+  qs('baseOsmBtn').addEventListener('click', () => { if(map.hasLayer(baseTopo)) map.removeLayer(baseTopo); if(!map.hasLayer(baseOSM)) map.addLayer(baseOSM); qs('baseOsmBtn').classList.add('active'); qs('baseSatBtn').classList.remove('active'); });
+  qs('baseSatBtn').addEventListener('click', () => { if(map.hasLayer(baseOSM)) map.removeLayer(baseOSM); if(!map.hasLayer(baseTopo)) map.addLayer(baseTopo); qs('baseSatBtn').classList.add('active'); qs('baseOsmBtn').classList.remove('active'); });
+  qs('togglePanelPoints').addEventListener('change', (e) => { overlayVisible = e.target.checked; solarLayer.redraw(); qs('mapInfo').textContent = overlayVisible ? 'Capa de 200 paneles activa.' : 'Capa de paneles oculta.'; });
+  qs('prepareMapSelectionBtn').addEventListener('click', () => {
+    qs('mapasDetails')?.removeAttribute('open');
+    qs('layersDetails')?.removeAttribute('open');
+    qs('utilSelect')?.click();
+    selectedIndex = null;
+    qs('panelTitle').textContent = 'Ficha de panel solar';
+    qs('panelSubtitle').textContent = 'Selecciona un punto del mapa para ver el detalle completo';
+    qs('mapInfo').textContent = 'Panel derecho limpio. Haz clic en un panel del mapa para preparar una nueva selección.';
+  });
+  qs('utilSelect').addEventListener('click', () => {
+    mapTool = 'select';
+    setActiveUtil('utilSelect');
+    qs('circleConfigPanel').classList.remove('open');
+    closePinModal();
+    clearCircularSelection();
+    qs('toolHint').textContent = 'Modo actual: selección individual de paneles.';
+    qs('mapInfo').textContent = 'Modo seleccionar activo. Haz clic en cualquier panel para ver su ficha técnica y evidencia.';
+    if(selectedIndex !== null && selectedIndex !== undefined) selectPanel(selectedIndex, false);
+  });
+  qs('utilCircle').addEventListener('click', () => {
+    mapTool = 'circle';
+    setActiveUtil('utilCircle');
+    qs('circleConfigPanel').classList.add('open');
+    circleDraftActive = false;
+    qs('toolHint').textContent = 'Círculo activo: primer clic centro, ajuste el radio y presione Finalizar.';
+    qs('mapInfo').textContent = 'Herramienta de círculo activa. Haz clic en el mapa para definir el centro.';
+    qs('toolHint').textContent = 'Modo actual: selección circular. Haz clic en el mapa para marcar el centro y usa el control para definir un radio variable.';
+    qs('mapInfo').textContent = 'Herramienta de selección circular activa. Haz clic en el mapa para marcar el centro del círculo y ajustar el radio variable.';
+    qs('toolHint').textContent = 'Círculo activo: primer clic centro, ajuste el radio y presione Finalizar.';
+    qs('mapInfo').textContent = 'Herramienta de círculo activa. Haz clic en el mapa para definir el centro.';
+  });
+  qs('utilFit').addEventListener('click', () => {
+    mapTool = 'select';
+    setActiveUtil('utilFit');
+    closePinModal();
+    fitPeruOverview(true);
+    qs('mapInfo').textContent = 'Vista reajustada al territorio continental del Perú.';
+  });
+  qs('utilRandom').addEventListener('click', () => {
+    mapTool = 'select';
+    setActiveUtil('utilRandom');
+    closePinModal();
+    selectPanel(Math.floor(Math.random() * TOTAL_PANELS), true);
+  });
+  qs('utilInventory').addEventListener('click', () => {
+    setActiveUtil('utilInventory');
+    qs('inventoryPanel').classList.toggle('open');
+    qs('mapInfo').textContent = 'Panel de inventario abierto para gestionar operativos, observados e inactivos.';
+  });
+  qs('utilPin').addEventListener('click', () => {
+    mapTool = 'pin';
+    setActiveUtil('utilPin');
+    qs('circleConfigPanel').classList.remove('open');
+    qs('toolHint').textContent = 'Modo actual: Registrar Punto. Haz clic en el mapa para capturar latitud y longitud y completar la ficha técnica.';
+    qs('mapInfo').textContent = 'Herramienta Registrar Punto activa. Haz clic en el mapa para registrar un nuevo punto fotovoltaico.';
+  });
+  qs('utilDger').addEventListener('click', () => {
+    mapTool = 'select';
+    setActiveUtil('utilDger');
+    qs('circleConfigPanel').classList.remove('open');
+    openDgerModal();
+  });
+  qs('radiusSlider').addEventListener('input', (e) => {
+    circleSelectionRadius = Number(e.target.value) * 1000;
+    qs('radiusValue').textContent = `${e.target.value} km`;
+    if(mapTool === 'circle' && selectionCenterLatLng){
+      drawCircularSelection(selectionCenterLatLng);
+    }
+  });
+  qs('applyCircleBtn').addEventListener('click', () => {
+    if(selectionCenterLatLng){
+      drawCircularSelection(selectionCenterLatLng);
+    } else {
+      qs('mapInfo').textContent = 'Primero haz clic en el mapa para marcar el centro de la selección circular.';
+      qs('toolHint').textContent = 'Falta marcar el centro. Haz clic en el mapa y luego ajusta el radio variable.';
+    }
+  });
+  qs('clearCircleBtn').addEventListener('click', () => {
+    clearCircularSelection();
+    qs('summaryCard').style.display = 'none';
+    qs('evidenceGallery').style.display = 'none';
+    qs('evidenceSingleWrap').style.display = 'block';
+    qs('detailsTitle').textContent = 'Información del panel seleccionado';
+    qs('selectionModeBadge').textContent = 'Individual';
+    qs('toolHint').textContent = 'Selección circular limpiada. Haz clic en el mapa para marcar un nuevo centro.';
+    qs('mapInfo').textContent = 'Selección circular limpiada. Marca un nuevo centro y ajusta el radio variable.';
+    qs('panelTitle').textContent = 'Ficha de panel solar';
+    qs('panelSubtitle').textContent = 'Selecciona un punto del mapa para ver el detalle completo';
+    qs('panelDetails').innerHTML = '<div class="detail-row"><span>Estado</span><b>Sin selección circular activa</b></div>';
+    updateFotoReportStatus();
+  });
+
+  qs('closePinModalBtn').addEventListener('click', closePinModal);
+  qs('savePinDraftBtn').addEventListener('click', savePinDraft);
+  qs('sendPinBtn').addEventListener('click', sendPinForSupervision);
+  qs('pinModal').addEventListener('click', (e) => { if(e.target.id === 'pinModal') closePinModal(); });
+
+  qs('closeDgerModalBtn').addEventListener('click', closeDgerModal);
+  qs('closeDgerFooterBtn').addEventListener('click', closeDgerModal);
+  qs('selectDgerFileBtn').addEventListener('click', () => qs('dgerExcelInput').click());
+  qs('dgerExcelInput').addEventListener('change', dgerFileChosen);
+  qs('processDgerBtn').addEventListener('click', processDgerExcel);
+  qs('exportDgerReportBtn').addEventListener('click', exportDgerTechnicalReport);
+  qs('dgerModal').addEventListener('click', (e) => { if(e.target.id === 'dgerModal') closeDgerModal(); });
+
+  qs('fotoEvidenceLoadBtn')?.addEventListener('click', () => {
+    if(selectedIndex === null || selectedIndex === undefined) return;
+    delete qs('fotoEvidenceInput').dataset.replace;
+    qs('fotoEvidenceInput').click();
+  });
+  qs('fotoEvidenceReplaceBtn')?.addEventListener('click', () => {
+    if(selectedIndex === null || selectedIndex === undefined) return;
+    qs('fotoEvidenceInput').dataset.replace = '1';
+    qs('fotoEvidenceInput').click();
+  });
+  qs('fotoEvidenceInput')?.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if(!file || selectedIndex === null || selectedIndex === undefined) return;
+    if(e.target.dataset.replace === '1'){
+      replaceActiveEvidence(file, selectedIndex);
+      delete e.target.dataset.replace;
+    } else {
+      handleEvidenceFile(file, selectedIndex);
+    }
+    e.target.value = '';
+  });
+
+  qs('fotoReportOpenBtn')?.addEventListener('click', openFotoReportModal);
+  qs('closeFotoReportModalBtn')?.addEventListener('click', closeFotoReportModal);
+  qs('fotoReportXlsxBtn')?.addEventListener('click', exportFotoReportXlsx);
+  qs('fotoReportPdfBtn')?.addEventListener('click', exportFotoReportPdf);
+  qs('fotoReportModal')?.addEventListener('click', e => { if(e.target.id === 'fotoReportModal') closeFotoReportModal(); });
+
+  qs('closeFotoStatusChangeModalBtn')?.addEventListener('click', closeFotoStatusChangeModal);
+  qs('cancelFotoStatusChangeBtn')?.addEventListener('click', closeFotoStatusChangeModal);
+  qs('confirmFotoStatusChangeBtn')?.addEventListener('click', confirmFotoStatusChange);
+  qs('fotoStatusChangeModal')?.addEventListener('click', e => { if(e.target.id === 'fotoStatusChangeModal') closeFotoStatusChangeModal(); });
+
+  qs('fotoLocationLogClearBtn')?.addEventListener('click', () => {
+    panelLocationLog.length = 0;
+    renderPanelLocationLog();
+    qs('mapInfo').textContent = 'Bitácora de cambios de ubicación limpiada.';
+  });
+
+  const app = document.querySelector('.app');
+  const content = document.querySelector('.content');
+  qs('toggleSidebarBtn')?.addEventListener('click', () => {
+    app.classList.toggle('sidebar-hidden');
+    setTimeout(() => map.invalidateSize(), 260);
+  });
+  qs('hideLeftPanelBtn')?.addEventListener('click', () => {
+    content.classList.add('left-hidden');
+    setTimeout(() => map.invalidateSize(), 260);
+  });
+  qs('showLeftPanelBtn')?.addEventListener('click', () => {
+    content.classList.remove('left-hidden');
+    setTimeout(() => map.invalidateSize(), 260);
+  });
+  qs('hideRightPanelBtn')?.addEventListener('click', () => {
+    content.classList.add('right-hidden');
+    setTimeout(() => map.invalidateSize(), 260);
+  });
+  qs('showRightPanelBtn')?.addEventListener('click', () => {
+    content.classList.remove('right-hidden');
+    setTimeout(() => map.invalidateSize(), 260);
+  });
+
+  window.__fotoMap = map;
+  window.fotoTriggerUtil = function(action){
+    if(action === 'pin'){
+      qs('utilPin')?.click();
+    }else if(action === 'dger'){
+      qs('utilDger')?.click();
+    }
+  };
+
+  function bindFotoSatPanelToggles(){
+    const contentEl = document.querySelector('.content');
+    if(!contentEl || contentEl.dataset.fotoSatToggleBound === '1') return;
+    contentEl.dataset.fotoSatToggleBound = '1';
+    document.documentElement.classList.add('integrated-mode');
+    const refreshMapLayout = () => setTimeout(() => { try { map?.invalidateSize?.(); } catch(e) {} }, 260);
+    window.toggleProjects = function(){
+      contentEl.classList.toggle('left-hidden');
+      refreshMapLayout();
+    };
+    window.toggleInfo = function(){
+      contentEl.classList.toggle('right-hidden');
+      refreshMapLayout();
+    };
+    contentEl.addEventListener('click', function(e){
+      if(e.target.closest('#toggleProjectsMapBtn,.sat-left-toggle')){
+        e.preventDefault();
+        e.stopPropagation();
+        window.toggleProjects();
+        return;
+      }
+      if(e.target.closest('#toggleInfoMapBtn,.sat-right-toggle')){
+        e.preventDefault();
+        e.stopPropagation();
+        window.toggleInfo();
+        return;
+      }
+    }, true);
+  }
+  bindFotoSatPanelToggles();
+  window.bindFotoSatPanelToggles = bindFotoSatPanelToggles;
+
+  generatePanelPoints();
+  applyFilters();
+  seedPanelLocationLog();
+  selectPanel(0, false);
+  map.closePopup();
+  fitPeruOverview(false);
+  setTimeout(() => {
+    map.invalidateSize();
+    fitPeruOverview(false);
+  }, 180);
+})();
+</script>
+
+</body>
+
+<script>
+(function(){
+  function getTopbarH1(){
+    var tb = document.querySelector('.topbar h1, .main .topbar h1');
+    return tb;
+  }
+  function getTopbarP(){
+    var p = document.querySelector('.topbar h1');
+    return p ? p.parentElement.querySelector('p') : null;
+  }
+  var originalH1=null, originalP=null;
+
+  function syncOverlayLeft(){
+    var ov = document.getElementById('usuariosOverlay');
+    if(!ov) return;
+    var sb = document.querySelector('.sidebar');
+    var w = sb ? sb.getBoundingClientRect().width : 260;
+    document.documentElement.style.setProperty('--usuarios-left', w + 'px');
+    var tb = document.querySelector('.main .topbar') || document.querySelector('.topbar');
+    var h = tb ? tb.getBoundingClientRect().height : 68;
+    document.documentElement.style.setProperty('--usuarios-top', h + 'px');
+  }
+
+  function setTopbarTitle(view){
+    var h1 = getTopbarH1();
+    var p = getTopbarP();
+    if(!h1) return;
+    if(originalH1===null) originalH1 = h1.textContent;
+    if(p && originalP===null) originalP = p.textContent;
+    h1.textContent = view==='listar' ? 'Usuarios > Listar usuarios' : 'Usuarios > Crear usuario';
+    if(p) p.textContent = 'Administración de cuentas y permisos del sistema';
+  }
+  function restoreTopbarTitle(){
+    var h1 = getTopbarH1();
+    var p = getTopbarP();
+    if(h1 && originalH1!==null) h1.textContent = originalH1;
+    if(p && originalP!==null) p.textContent = originalP;
+  }
+
+  // Envolver __openUsuarios / __closeUsuarios cuando estén disponibles
+  function wrap(){
+    if(typeof window.__openUsuarios === 'function' && !window.__openUsuarios.__wrapped){
+      var orig = window.__openUsuarios;
+      window.__openUsuarios = function(view){
+        orig(view);
+        syncOverlayLeft();
+        setTopbarTitle(view);
+      };
+      window.__openUsuarios.__wrapped = true;
+    }
+    if(typeof window.__closeUsuarios === 'function' && !window.__closeUsuarios.__wrapped){
+      var origC = window.__closeUsuarios;
+      window.__closeUsuarios = function(){
+        origC();
+        restoreTopbarTitle();
+      };
+      window.__closeUsuarios.__wrapped = true;
+    }
+  }
+  document.addEventListener('DOMContentLoaded', wrap);
+  setTimeout(wrap, 0);
+  setTimeout(wrap, 500);
+
+  // Observar cambios en la clase del .app para reajustar el overlay al colapsar/expandir
+  document.addEventListener('DOMContentLoaded', function(){
+    var app = document.querySelector('.app');
+    if(app){
+      new MutationObserver(syncOverlayLeft).observe(app, {attributes:true, attributeFilter:['class']});
+    }
+    window.addEventListener('resize', syncOverlayLeft);
+    syncOverlayLeft();
+  });
+})();
+
