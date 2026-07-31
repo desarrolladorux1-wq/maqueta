@@ -7,8 +7,8 @@ window.__MODULE_PATHS = {
   'vale-fise-source': 'modulos/vale_fise/vale_fise.html?v=vale-kpi-map-filter-v1',
   'ahorro-gnv-source': 'modulos/ahorro_gnv/ahorro_gnv.html?v=dashboard-filters-v1',
   'ahorro-gnv-satcontrol-source': 'modulos/ahorro_gnv/ahorro_gnv_satcontrol.html?v=beneficiary-focus-v1',
-  'masificacion-source': 'modulos/masificacion/masificacion.html',
-  'masificacion-satcontrol-source': 'modulos/masificacion/masificacion_satcontrol.html?v=masif-no-active-layer-label-v11',
+  'masificacion-source': 'modulos/masificacion/masificacion.html?v=masif-project-terminology-v12',
+  'masificacion-satcontrol-source': 'modulos/masificacion/masificacion_satcontrol.html?v=masif-project-terminology-v12',
   'mcter-source': 'modulos/mtcer/mtcer.html?v=mcter-compact-kpis-v1'
 };
 window.__moduleCache = window.__moduleCache || {};
@@ -974,7 +974,7 @@ function exportProjectModalBeneficiaries(){const rows=getProjectModalBeneficiari
 function parseProjectBeneficiaryCsv(text){const lines=text.split(/\r?\n/).filter(function(l){return l.trim();});if(lines.length<2)return[];const splitLine=function(line){return line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(c){return c.replace(/^"|"$/g,'').replace(/""/g,'"').trim();});};return lines.slice(1).map(function(line,i){const cols=splitLine(line);const row={};PROJECT_BENEF_KEYS.forEach(function(k,idx){row[k]=cols[idx]||'';});return Object.assign(defaultProjectBeneficiary(i+1),row);}).filter(function(r){return r.id||r.doc||r.razon||r.tipo;});}
 function importProjectModalBeneficiariesFile(file){if(!file)return;const reader=new FileReader();reader.onload=function(){const rows=parseProjectBeneficiaryCsv(String(reader.result||''));if(!rows.length){showToast('No se encontraron beneficiarios en el archivo');return;}setProjectModalBeneficiaries(rows);showToast('Importados '+rows.length+' beneficiario(s)');};reader.readAsText(file);}
 function initProjectModalBeneficiaries(){if(window.__projectModalBenefInit)return;window.__projectModalBenefInit=true;qs('#projectModalAddBenefBtn')?.addEventListener('click',addProjectModalBeneficiary);qs('#projectModalExportBtn')?.addEventListener('click',exportProjectModalBeneficiaries);qs('#projectModalImportBtn')?.addEventListener('click',function(){qs('#projectModalImportInput')?.click();});qs('#projectModalImportInput')?.addEventListener('change',function(e){const file=e.target.files&&e.target.files[0];importProjectModalBeneficiariesFile(file);e.target.value='';});}
-function openProjectModal(id){editingId=id||null;initProjectModalBeneficiaries();initBonogasBeneficiaryImport();qs('#modalTitle').textContent=id?'Modificar agrupación':'Crear agrupación';const f=qs('#projectForm');const p=id?projects.find(x=>x.id===id):{id:'FISE-2026-004',nombre:'Red de Gas Natural - Sector 010101',lider:'',responsables:[],departamento:'Lima',provincia:'Lima',distrito:'Magdalena',tipo:'Masificación de gas FISE',estado:'En evaluación',beneficiarios:0,area:'-'};['id','nombre','lider','departamento','provincia','distrito','tipo','estado','beneficiarios','area'].forEach(k=>f.elements[k].value=p[k]??'');if(f.elements.ubigeo)f.elements.ubigeo.value=p.ubigeo||'010101';f.elements.responsables.value=(p.responsables||[]).join(', ');if(isBonogasBeneficiaryImportMode()){resetBonogasBeneficiaryImport('modal');setBonogasBeneficiaryRows('modal',p.bonogasBeneficiariosList||[]);}else{setProjectModalBeneficiaries(p.beneficiariosList&&p.beneficiariosList.length?p.beneficiariosList:[defaultProjectBeneficiary(1)]);}syncBonogasBeneficiaryUi('modal');openModal('projectModal')}
+function openProjectModal(id){editingId=id||null;initProjectModalBeneficiaries();initBonogasBeneficiaryImport();qs('#modalTitle').textContent=qs('.main')?.classList.contains('masificacion-mode')?(id?'Modificar proyecto':'Crear proyecto'):(id?'Modificar agrupación':'Crear agrupación');const f=qs('#projectForm');const p=id?projects.find(x=>x.id===id):{id:'FISE-2026-004',nombre:'Red de Gas Natural - Sector 010101',lider:'',responsables:[],departamento:'Lima',provincia:'Lima',distrito:'Magdalena',tipo:'Masificación de gas FISE',estado:'En evaluación',beneficiarios:0,area:'-'};['id','nombre','lider','departamento','provincia','distrito','tipo','estado','beneficiarios','area'].forEach(k=>f.elements[k].value=p[k]??'');if(f.elements.ubigeo)f.elements.ubigeo.value=p.ubigeo||'010101';f.elements.responsables.value=(p.responsables||[]).join(', ');if(isBonogasBeneficiaryImportMode()){resetBonogasBeneficiaryImport('modal');setBonogasBeneficiaryRows('modal',p.bonogasBeneficiariosList||[]);}else{setProjectModalBeneficiaries(p.beneficiariosList&&p.beneficiariosList.length?p.beneficiariosList:[defaultProjectBeneficiary(1)]);}syncBonogasBeneficiaryUi('modal');openModal('projectModal');if(qs('.main')?.classList.contains('masificacion-mode')){const modal=qs('#projectModal');if(modal){const walker=document.createTreeWalker(modal,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(node=>{node.nodeValue=node.nodeValue.replace(/agrupaciones/gi,'proyectos').replace(/agrupación/gi,'proyecto').replace(/de la nueva proyecto/gi,'del nuevo proyecto').replace(/de la proyecto/gi,'del proyecto');});}}}
 window.openProjectModal=openProjectModal;
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='openFullInstallerRankingBtn'){openInstallerRanking(qs('#valInstallerMiniDetail h4')?.textContent||'Instalaciones del Norte S.A.C.')}if(e.target&&e.target.id==='gnvOpenFullInstallerRankingBtn'){openInstallerRanking(qs('#gnvValInstallerMiniDetail h4')?.textContent||'Instalaciones del Norte S.A.C.')}});
 qs('#projectForm').onsubmit=e=>{e.preventDefault();const f=e.target;const bonogasMode=isBonogasBeneficiaryImportMode();const benefList=bonogasMode?getBonogasBeneficiaryRows('modal'):getProjectModalBeneficiaries();if(bonogasMode&&!benefList.length){showToast('Suba un Excel con al menos un beneficiario');return;}const obj={id:f.id.value,nombre:f.nombre.value,lider:f.lider.value,responsables:f.responsables.value.split(',').map(x=>x.trim()).filter(Boolean),departamento:f.departamento.value,provincia:f.provincia.value,distrito:f.distrito.value,tipo:f.tipo.value,estado:f.estado.value,beneficiarios:benefList.length||Number(f.beneficiarios.value||0),beneficiariosList:bonogasMode?[]:benefList,bonogasBeneficiariosList:bonogasMode?benefList:[],area:f.area.value,ubigeo:f.ubigeo?.value||''};const idx=projects.findIndex(p=>p.id===editingId);if(idx>=0){projects[idx]=Object.assign({},projects[idx],obj,{lat:projects[idx].lat,lng:projects[idx].lng});}else{projects.unshift(Object.assign({lat:-12.0464,lng:-77.0428},obj));}selectedId=obj.id;closeModal('projectModal');showToast('Agrupación guardada con '+benefList.length+' beneficiario(s)');renderAll();if(qs('.main')?.classList.contains('project-list-mode'))renderProjectListTable()};
@@ -1158,21 +1158,23 @@ function openEnhancedProjectModal(id){
   editingId=id||null;ensureEnhancedProjectModal();
   const project=id?projects.find(p=>p.id===id):{id:'FISE-2026-'+String(projects.length+1).padStart(3,'0'),nombre:'',lider:'Oliver Gonzales',responsables:[],departamento:'',provincia:'',distrito:'',tipo:'Masificación de gas FISE',estado:'En evaluación',fechaInicio:'',fechaFin:'',area:''};
   const form=qs('#projectForm');const isEdit=!!id;
-  const groupingMode=!!qs('.main.ahorro-gnv-mode');
-  const entity=groupingMode?'agrupación':'agrupación';
+  const projectMode=!!qs('.main.masificacion-mode');
+  const entity=projectMode?'proyecto':'agrupación';
   qs('#modalTitle').textContent=(isEdit?'Modificar ':'Crear ')+entity;
   qs('#projectModal .modal-head p').textContent=isEdit
-    ?'Actualice los datos, el equipo, el área y los beneficiarios asociados '+(groupingMode?'a la agrupación.':'a la agrupación.')
-    :'Registre la información inicial '+(groupingMode?'de la nueva agrupación.':'del nuevo agrupación.');
+    ?'Actualice los datos, el equipo, el área y los beneficiarios asociados '+(projectMode?'al proyecto.':'a la agrupación.')
+    :'Registre la información inicial '+(projectMode?'del nuevo proyecto.':'de la nueva agrupación.');
   const groupingLabels={id:'Código de agrupación',nombre:'Nombre de la agrupación',tipo:'Tipo de agrupación'};
-  const projectLabels={id:'Código de agrupación',nombre:'Nombre de la agrupación',tipo:'Tipo de agrupación'};
-  const modalLabels=groupingMode?groupingLabels:projectLabels;
+  const projectLabels={id:'Código de proyecto',nombre:'Nombre del proyecto',tipo:'Tipo de proyecto'};
+  const modalLabels=projectMode?projectLabels:groupingLabels;
   Object.keys(modalLabels).forEach(function(name){
     const field=form.elements[name]?.closest('.field');
     const label=field?.querySelector('label');
     if(label)label.textContent=modalLabels[name];
   });
   qs('#projectModal .modal-card').classList.toggle('project-edit-mode',isEdit);
+  const submitButton=qs('#projectForm button[type="submit"]');
+  if(submitButton)submitButton.textContent=projectMode?'Guardar proyecto':'Guardar agrupación';
   ['id','nombre','fechaInicio','fechaFin','departamento','provincia','distrito','tipo','estado','area'].forEach(k=>{if(form.elements[k])form.elements[k].value=project[k]??'';});
   form.elements.lider.innerHTML='<option value="">-- Seleccione --</option>'+projectLeaderOptions(project.lider||'');
   form.elements.equipo.innerHTML=projectTeamOptions(project.responsables||[]);
@@ -1200,7 +1202,7 @@ qs('#projectForm').onsubmit=function(e){
   const obj={id:form.id.value.trim(),nombre:form.nombre.value.trim(),fechaInicio:form.fechaInicio.value,fechaFin:form.fechaFin.value,lider:form.lider.value,responsables:Array.from(form.equipo.selectedOptions).map(o=>o.value),departamento:form.departamento.value,provincia:form.provincia.value,distrito:form.distrito.value,tipo:form.tipo.value,estado:form.estado.value,beneficiarios:rows.length,beneficiaryHeaders:projectBeneficiaryHeaders.slice(),beneficiariosList:rows.map(r=>Object.assign({},r)),bonogasBeneficiariosList:[],area:form.area.value,lat:Number(form.lat.value)||-12.0464,lng:Number(form.lng.value)||-77.0428,areaPolygon:projectAreaPolygon.slice(),localizacion:form.localizacion.value};
   const index=projects.findIndex(p=>p.id===editingId);
   if(index>=0)projects[index]=Object.assign({},projects[index],obj);else projects.unshift(obj);
-  selectedId=obj.id;closeModal('projectModal');renderAll();if(qs('.main')?.classList.contains('project-list-mode'))renderProjectListTable();showToast((qs('.main.ahorro-gnv-mode')?'Agrupación':'Agrupación')+' guardado con '+rows.length+' beneficiario(s)');
+  selectedId=obj.id;closeModal('projectModal');renderAll();if(qs('.main')?.classList.contains('project-list-mode'))renderProjectListTable();showToast((qs('.main.masificacion-mode')?'Proyecto':'Agrupación')+' guardado con '+rows.length+' beneficiario(s)');
 };
 const originalFinishDrawingForProject=finishDrawing;
 finishDrawing=function(){
@@ -1968,6 +1970,14 @@ async function loadIntegratedModuleSources(){
       const parentWin=frame&&frame.ownerDocument&&frame.ownerDocument.defaultView?frame.ownerDocument.defaultView:window;
       if(parentWin&&typeof parentWin.openProjectModal==='function'){
         parentWin.openProjectModal(projectId||null);
+        if(frame.id==='masificacionFrame'){
+          const modal=parentWin.document&&parentWin.document.querySelector('#projectModal');
+          if(modal){
+            const walker=parentWin.document.createTreeWalker(modal,NodeFilter.SHOW_TEXT);
+            const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+            nodes.forEach(function(node){node.nodeValue=node.nodeValue.replace(/agrupaciones/gi,'proyectos').replace(/agrupación/gi,'proyecto');});
+          }
+        }
         return true;
       }
     }catch(err){}
@@ -2001,7 +2011,7 @@ async function loadIntegratedModuleSources(){
           if(typeof win.openProjectModal==='function')win.openProjectModal(id);
         },true);
       });
-      doc.querySelectorAll('button[title="Crear agrupación"],button[title="Crear agrupación"]').forEach(function(btn){
+      doc.querySelectorAll('button[title="Crear agrupación"],button[title="Crear proyecto"]').forEach(function(btn){
         if(btn.id==='createBtn')return;
         const label=(btn.textContent||'').trim();
         if(label.indexOf('Crear')<0&&label.indexOf('Nuevo agrupación')<0)return;
