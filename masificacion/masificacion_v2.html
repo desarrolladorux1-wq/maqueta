@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masificación — Manzanas por estrato</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body, html, #map { height: 100%; margin: 0; padding: 0; }
+    #map { position: absolute; top:0; right:0; bottom:0; left:0 }
+    .legend { background: white; padding: 8px; line-height: 1.3; }
+    .control-btn { background: white; padding: 6px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Mapa base
+    var map = L.map('map').setView([-12.0701, -77.0365], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Capa de proyectos (si existe data/projects.geojson)
+    var projectsLayer = L.layerGroup();
+
+    // Control de capas dinámico
+    var overlayMaps = {"Proyectos": projectsLayer};
+    var layersControl = L.control.layers({}, overlayMaps, {collapsed: false}).addTo(map);
+
+    // Leyenda
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function () {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<b>Estrato</b><br>' +
+        '<i style="background:#083006;width:18px;height:12px;display:inline-block;margin-right:6px"></i> A (alto)<br>' +
+        '<i style="background:#1b7837;width:18px;height:12px;display:inline-block;margin-right:6px"></i> B<br>' +
+        '<i style="background:#5aae61;width:18px;height:12px;display:inline-block;margin-right:6px"></i> C<br>' +
+        '<i style="background:#c7e9c0;width:18px;height:12px;display:inline-block;margin-right:6px"></i> D (bajo)';
+      return div;
+    };
+    legend.addTo(map);
+
+    // Función de color según propiedad 'estrato' o 'estrato_lvl'
+    function getColor(estrato) {
+      if (!estrato && typeof estrato !== 'string') return '#c7e9c0';
+      var e = String(estrato).toUpperCase();
+      return e === 'A' || e === '1' ? '#083006' :
+             e === 'B' || e === '2' ? '#1b7837' :
+             e === 'C' || e === '3' ? '#5aae61' :
+             '#c7e9c0';
+    }
+
+    function styleFeature(feature) {
+      return {
+        fillColor: getColor(feature.properties && (feature.properties.estrato || feature.properties.ESTRATO || feature.properties.estrato_lvl)),
+        weight: 0.5,
+        opacity: 1,
+        color: '#ffffff',
+        fillOpacity: 0.9
+      };
+    }
+
+    // Cargar configuración de capas (archivo data/config.json)
+    fetch('data/config.json').then(function(r){ return r.json(); }).then(function(cfg){
+      // cfg is expected to be an object: { "Lima": "data/lima.geojson", ... }
+      Object.keys(cfg).forEach(function(name){
+        var path = cfg[name];
+        // create a placeholder layer to be lazily loaded
+        var layerGroup = L.layerGroup();
+        overlayMaps[name] = layerGroup;
+        layersControl.addOverlay(layerGroup, name);
+
+        // When user toggles on, Leaflet will add the group to map; we listen for add event to lazy-load
+        layerGroup.on('add', function(){
+          if (layerGroup._loaded) return; // already loaded
+          fetch(path).then(function(r){
+            if (!r.ok) throw new Error('No se encontró ' + path);
+            return r.json();
+          }).then(function(geojson){
+            var g = L.geoJson(geojson, {
+              style: styleFeature,
+              onEachFeature: function(f, layer) {
+                var p = f.properties || {};
+                var popup = [];
+                if (p.id) popup.push('ID: '+p.id);
+                if (p.estrato) popup.push('Estrato: '+p.estrato);
+                if (p.ESTRATO) popup.push('Estrato: '+p.ESTRATO);
+                layer.bindPopup(popup.join('<br>'));
+              }
+            });
+            layerGroup.addLayer(g);
+            layerGroup._loaded = true;
+          }).catch(function(err){
+            console.error('Error cargando capa', name, err);
+            var msg = L.marker(map.getCenter(), {opacity:0.0});
+            msg.bindPopup('No se pudo cargar la capa '+name+' (ver consola)').addTo(layerGroup);
+          });
+        });
+      });
+
+      // cargar capa de proyectos si existe
+      fetch('masificacion/projects.geojson').then(function(r){
+        if (!r.ok) return; // optional
+        return r.json();
+      }).then(function(projects){
+        if (!projects) return;
+        var projGeo = L.geoJson(projects, {
+          pointToLayer: function(f, latlng){
+            return L.circleMarker(latlng, {radius:6, fillColor:'#ffcc00', color:'#333', weight:1, fillOpacity:1});
+          },
+          onEachFeature: function(f, layer){
+            var p = f.properties || {};
+            var popup = [];
+            if (p.name) popup.push('<b>'+p.name+'</b>');
+            if (p.tipo) popup.push('Tipo: '+p.tipo);
+            if (p.estrato) popup.push('Estrato objetivo: '+p.estrato);
+            layer.bindPopup(popup.join('<br>'));
+          }
+        }).addTo(projectsLayer);
+        layersControl.removeLayer(projectsLayer);
+        layersControl.addOverlay(projectsLayer, 'Proyectos');
+      }).catch(function(){ /* no projects file */ });
+
+    }).catch(function(err){
+      console.error('No se pudo leer data/config.json', err);
+      alert('No se encontró data/config.json. Coloca un archivo con la lista de departamentos y rutas a GeoJSON.');
+    });
+
+  </script>
+</body>
+</html>
