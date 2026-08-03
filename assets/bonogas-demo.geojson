@@ -1,0 +1,169 @@
+{
+  "type": "FeatureCollection",
+  "name": "BonoGas Demo Trujillo",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "manzana",
+        "id": "MZ-TRJ-001",
+        "Plano_maestro": "PM-2026-TRJ-014",
+        "Codigo_proyecto": "BGAS-TRJ-2026-001",
+        "Nombre_proyecto": "Masificación BonoGas Sector El Recreo",
+        "Contratista_asignado": "Gas Norte Instalaciones S.A.C.",
+        "Sector_comercial": "El Recreo"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-79.0285, -8.1095],
+          [-79.0260, -8.1095],
+          [-79.0260, -8.1075],
+          [-79.0285, -8.1075],
+          [-79.0285, -8.1095]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "manzana",
+        "id": "MZ-TRJ-002",
+        "Plano_maestro": "PM-2026-TRJ-015",
+        "Codigo_proyecto": "BGAS-TRJ-2026-001",
+        "Nombre_proyecto": "Masificación BonoGas Sector El Recreo",
+        "Contratista_asignado": "Instalagas Perú S.A.C.",
+        "Sector_comercial": "El Recreo Norte"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-79.0260, -8.1095],
+          [-79.0235, -8.1095],
+          [-79.0235, -8.1075],
+          [-79.0260, -8.1075],
+          [-79.0260, -8.1095]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "red",
+        "id": "RED-TRJ-001",
+        "ID_PIPE": "RED-001-A",
+        "NAME": "Troncal Av. España",
+        "MATERIAL": "Acero",
+        "DIAMETER": "4",
+        "PRESSURE": "4 bar",
+        "STATE": "Operativo",
+        "INSTALLATION_DATE": "2024-06-15"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-79.0290, -8.1100],
+          [-79.0270, -8.1090],
+          [-79.0250, -8.1085],
+          [-79.0230, -8.1080]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "tubo",
+        "id": "TUB-TRJ-001",
+        "ID_PIPE": "TUB-014-A",
+        "DIAMETER": "3/4",
+        "MATERIAL": "PEAD",
+        "STATE": "Instalado"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-79.0278, -8.1088],
+          [-79.0272, -8.1084]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "tubo",
+        "id": "TUB-TRJ-002",
+        "ID_PIPE": "TUB-014-B",
+        "DIAMETER": "3/4",
+        "MATERIAL": "Cobre",
+        "STATE": "En prueba"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-79.0255, -8.1086],
+          [-79.0248, -8.1082]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "acometida",
+        "id": "ACO-TRJ-001",
+        "NAME": "SUM-5208079",
+        "STATE": "Habilitado",
+        "OWNER": "María Quispe Huamán",
+        "INSTALLATION_DATE": "2025-01-20"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-79.0275, -8.1086]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "acometida",
+        "id": "ACO-TRJ-002",
+        "NAME": "SUM-913777",
+        "STATE": "En construcción",
+        "OWNER": "José Mamani Flores",
+        "INSTALLATION_DATE": "2025-03-05"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-79.0252, -8.1084]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "acometida",
+        "id": "ACO-TRJ-003",
+        "NAME": "SUM-5410777",
+        "STATE": "Pendiente",
+        "OWNER": "Rosa Condori Arias",
+        "INSTALLATION_DATE": "2025-04-12"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-79.0240, -8.1081]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tipo_geoportal": "acometida",
+        "id": "ACO-TRJ-004",
+        "NAME": "SUM-4412098",
+        "STATE": "Habilitado",
+        "OWNER": "Luis Apaza Quispe",
+        "INSTALLATION_DATE": "2024-11-30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-79.0270, -8.1092]
+      }
+    }
+  ]
+}

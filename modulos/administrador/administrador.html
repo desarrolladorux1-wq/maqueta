@@ -1,0 +1,394 @@
+<!-- Fragmento SATCONTROL · Administrador -->
+    <section class="content">
+      <button class="sat-panel-toggle sat-left-toggle" id="satProjectsToggle" type="button" title="Ocultar proyectos" aria-label="Ocultar proyectos"></button>
+      <button class="sat-panel-toggle sat-right-toggle" id="satInfoToggle" type="button" title="Ocultar panel derecho" aria-label="Ocultar panel derecho"></button>
+      <aside class="left-panel">
+        <div class="panel-head"><div><h2>Proyectos</h2><p style="margin:4px 0 0;color:#94a3b8;font-size:12px;font-weight:750">Seleccione proyecto, lote, círculo o área GIS</p></div><button class="btn" id="createBtn">+ Crear</button></div>
+        <div class="search"><input id="searchInput" placeholder="Buscar selección, distrito o responsable" /></div>
+        <div class="project-list" id="projectList"></div>
+      </aside>
+
+      <section class="map-wrap">
+        <div class="map-shell">
+          <div class="map" id="map"></div>
+          <div id="projectUtilMapAnchor">
+            <div class="project-utils-dock is-pinned pu-hidden" id="projectUtilsDock" aria-label="Utilitarios del proyecto">
+              <div class="pu-module-group" data-module="proyectos">
+                <span class="pu-module-label">Proyectos</span>
+                <button class="util-btn util-extra ref-tool active tool-utility proy-tone-select" id="utilSelectToolBtn" type="button" title="Seleccionar lote o vivienda" aria-label="Seleccionar lote o vivienda"><svg class="svg-icon" aria-hidden="true"><use href="#i-cursor"></use></svg></button>
+                <button class="util-btn util-extra ref-tool tool-utility proy-tone-measure" id="utilMeasureToolBtn" type="button" title="Medir distancia" aria-label="Medir distancia"><svg class="svg-icon" aria-hidden="true"><use href="#i-ruler"></use></svg></button>
+                <button class="util-btn util-extra ref-tool tool-utility proy-tone-polygon" id="utilPolygonToolBtn" type="button" title="Dibujar área o polígono" aria-label="Dibujar área o polígono">⬠</button>
+                <button class="util-btn util-extra ref-tool tool-utility proy-tone-circle" id="utilCircleToolBtn" type="button" title="Dibujar círculo" aria-label="Dibujar círculo">○</button>
+              </div>
+              <div id="proyectosModuleToolsHost" class="pu-module-tools-host" aria-label="Herramientas por módulo SATCONTROL"></div>
+              <span class="util-separator" aria-hidden="true"></span>
+              <button class="util-btn icon-plain more" id="utilMoreBtn" type="button" title="Menu de opciones" aria-label="Menu de opciones"><svg class="svg-icon" aria-hidden="true"><use href="#i-more-vertical"></use></svg></button>
+              <button class="util-btn icon-plain pin active" id="utilPinBtn" type="button" title="Fijar utilitarios en posición actual" aria-label="Fijar utilitarios en posición actual" aria-pressed="true"><svg class="svg-icon" aria-hidden="true"><use href="#i-pin"></use></svg></button>
+            </div>
+          </div>
+          <div class="project-utils-dock bonogas-map-utils pu-hidden is-pinned" id="bonogasUtilsDock" aria-label="Utilitarios BonoGas">
+            <button class="util-btn util-main ref-filters" id="bonoUtilFiltersBtn" type="button" title="Filtros BonoGas" aria-label="Filtros BonoGas"><svg class="svg-icon" aria-hidden="true"><use href="#i-filter"></use></svg></button>
+            <span class="util-separator util-extra" aria-hidden="true"></span>
+            <button class="util-btn util-extra ref-liquidation" id="bonoUtilLiquidationBtn" type="button" title="Liquidaciones" aria-label="Liquidaciones"><svg class="svg-icon" aria-hidden="true"><use href="#i-receipt"></use></svg></button>
+            <button class="util-btn util-extra extra-ai" id="bonoUtilValidacionesIaBtn" type="button" title="Validación IA" aria-label="Validación IA" data-open-bonogas-ai-flow><svg class="svg-icon" aria-hidden="true"><use href="#i-bot"></use></svg></button>
+            <span class="util-separator util-extra" aria-hidden="true"></span>
+            <button class="util-btn util-extra ref-tool active tool-utility" id="bonoUtilSelectToolBtn" type="button" title="Seleccionar lote o vivienda" aria-label="Seleccionar lote o vivienda"><svg class="svg-icon" aria-hidden="true"><use href="#i-cursor"></use></svg></button>
+            <button class="util-btn util-extra ref-tool tool-utility" id="bonoUtilMeasureToolBtn" type="button" title="Medir distancia" aria-label="Medir distancia"><svg class="svg-icon" aria-hidden="true"><use href="#i-ruler"></use></svg></button>
+            <button class="util-btn util-extra ref-tool tool-utility" id="bonoUtilPolygonToolBtn" type="button" title="Dibujar área o polígono" aria-label="Dibujar área o polígono">⬠</button>
+            <button class="util-btn util-extra ref-tool tool-utility" id="bonoUtilCircleToolBtn" type="button" title="Dibujar círculo" aria-label="Dibujar círculo">○</button>
+            <span class="util-separator" aria-hidden="true"></span>
+            <button class="util-btn icon-plain more" id="bonoUtilMoreBtn" type="button" title="Ver mas utilitarios" aria-label="Ver mas utilitarios"><svg class="svg-icon" aria-hidden="true"><use href="#i-more-vertical"></use></svg></button>
+            <button class="util-btn icon-plain pin" id="bonoUtilPinBtn" type="button" title="Mover utilitarios" aria-label="Mover utilitarios"><svg class="svg-icon" aria-hidden="true"><use href="#i-pin"></use></svg></button>
+          </div>
+          <div class="toolbar gis-toolbar">
+            <button class="ge-action-btn active" id="mapasBtn" title="Seleccionar mapa base">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 7h14M5 12h14M5 17h14"></path>
+                <circle class="fill-current" cx="8" cy="7" r="1.6"></circle>
+                <circle class="fill-current" cx="16" cy="12" r="1.6"></circle>
+                <circle class="fill-current" cx="11" cy="17" r="1.6"></circle>
+              </svg>
+              <span>Mapas</span>
+            </button>
+            <button class="ge-action-btn" id="capasBtn" title="Seleccionar capas superpuestas">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4l8 4-8 4-8-4 8-4z"></path>
+                <path d="M4 12l8 4 8-4"></path>
+                <path d="M4 16l8 4 8-4"></path>
+              </svg>
+              <span>Capas</span>
+            </button>
+            <button class="ge-action-btn map-upload-action" title="Subir capas GIS" id="uploadLayerBtn" aria-label="Subir capas GIS">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 16V5"></path>
+                <path d="M8 9l4-4 4 4"></path>
+                <path d="M5 19h14"></path>
+              </svg>
+              <span>Subir capas</span>
+            </button>
+            <button class="ge-action-btn" id="tematicosBtn" title="Seleccionar mapas temáticos">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 19h14"></path>
+                <path d="M7 16c2-7 4-10 6-10s4 3 6 10"></path>
+                <circle class="fill-current" cx="8" cy="16" r="1.6"></circle>
+                <circle class="fill-current" cx="13" cy="8" r="1.6"></circle>
+                <circle class="fill-current" cx="18" cy="16" r="1.6"></circle>
+              </svg>
+              <span>Temáticos</span>
+            </button>
+            <button class="ge-btn active" title="Limpiar panel derecho y preparar selección en mapa" id="mapPanelToggleBtn" aria-label="Limpiar panel derecho y preparar selección en mapa">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2V6z"></path>
+                <path d="M9 4v14"></path>
+                <path d="M15 6v14"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="map-floating-panel bonogas-filters-float" id="bonogasFiltersFloatPanel" hidden aria-hidden="true">
+            <div class="floating-title">Filtros BonoGas</div>
+            <div id="bonogasFiltersMount"></div>
+          </div>
+          <div class="map-floating-panel" id="mapsPanel">
+            <div class="floating-title">Mapas base</div>
+            <label class="layer-option"><input type="radio" name="baseMap" value="osm" checked><span>OpenStreetMap</span></label>
+            <label class="layer-option"><input type="radio" name="baseMap" value="dark"><span>Modo oscuro</span></label>
+            <label class="layer-option"><input type="radio" name="baseMap" value="sat" onclick="openSatelliteIndicesPanel()"><span>Satélite</span></label>
+          </div>
+          <div class="map-floating-panel" id="layersPanel">
+            <div class="floating-title">Capas superpuestas</div>
+            <label class="layer-option"><input type="checkbox" id="layerEstrato" checked><span>Estrato / lotes</span></label>
+            <div class="layer-legend">
+              <div class="floating-title">Capa de Suministros Habilitados (Liquidados y Pendientes)</div>
+              <label class="layer-option"><input type="checkbox" id="layerBenLiquidados" checked><span>Habilitados - Liquidados</span></label>
+              <label class="layer-option"><input type="checkbox" id="layerBenPendLiquid" checked><span>Habilitados - Pendientes de Liquidación</span></label>
+              <label class="layer-option"><input type="checkbox" id="layerBenConstrDentro" checked><span>En Construcción - Dentro de Plazo</span></label>
+              <label class="layer-option"><input type="checkbox" id="layerBenConstrFuera" checked><span>En Construcción - Fuera de Plazo</span></label>
+            </div>
+            <label class="layer-option"><input type="checkbox" id="layerCobertura" checked><span>Cobertura</span></label>
+            <div class="layer-legend">
+              <div class="floating-title">Capa de Proyección de Redes de Extensión</div>
+              <label class="layer-option"><input type="checkbox" id="layerTroncal" checked><span>Troncal de gas</span></label>
+              <label class="layer-option"><input type="checkbox" id="layerRamales" checked><span>Proyección de redes de extensión</span></label>
+              <label class="layer-option"><input type="checkbox" id="layerConcesionaria" checked><span>Redes por concesionaria</span></label>
+            </div>
+            <label class="layer-option"><input type="checkbox" id="layerDistritos"><span>Distritos delimitados</span></label>
+            <div class="layer-legend">
+              <div class="legend-row"><span class="legend-circle"></span>Cobertura referencial</div>
+              <div class="legend-row"><span class="legend-line"></span>Troncal principal</div>
+              <div class="legend-row"><span class="legend-line green"></span>Ramales secundarios</div>
+              <div class="legend-row"><span class="legend-line concesionaria"></span>Redes por concesionaria</div>
+            </div>
+            <div class="layer-legend" style="margin-top:8px">
+              <div class="floating-title">Capas cargadas</div>
+              <div id="uploadedLayersList" class="uploaded-layers-list"><div class="uploaded-empty">No hay capas cargadas</div></div>
+            </div>
+          </div>
+          <div class="district-panel" id="districtsPanel">
+            <div class="district-panel-head" id="districtsPanelHandle">
+              <div>
+                <div class="floating-title">Distritos delimitados</div>
+                <small>Seleccione un distrito para resaltarlo en el mapa</small>
+              </div>
+              <button class="district-close-btn" id="closeDistrictsPanelBtn" type="button">×</button>
+            </div>
+            <div class="district-panel-body">
+              <label class="district-field"><span>Departamento</span><select id="districtDepartmentSelect"><option value="Arequipa">Arequipa</option></select></label>
+              <label class="district-field"><span>Provincia</span><select id="districtProvinceSelect"><option value="Arequipa">Arequipa</option></select></label>
+              <div class="district-list" id="districtList"></div>
+            </div>
+          </div>
+          <div class="map-floating-panel" id="themesPanel">
+            <div class="floating-title">Mapas temáticos</div>
+            <div class="thematic-module-label">Bono Gas</div>
+            <label class="layer-option"><input type="checkbox" id="layerMorosidad"><span>Mapa de calor · Morosidad</span></label>
+            <div class="layer-legend">
+              <div class="legend-row"><span class="heat-gradient" style="width:86px;height:11px"></span>Pendiente de recaudación</div>
+              <div class="legend-row"><span class="heat-color heat-low"></span>Baja morosidad</div>
+              <div class="legend-row"><span class="heat-color heat-mid"></span>Morosidad media</div>
+              <div class="legend-row"><span class="heat-color heat-high"></span>Alta morosidad</div>
+              <div class="legend-row"><span class="heat-color heat-critical"></span>Morosidad crítica</div>
+            </div>
+            <div class="thematic-module-label">Vale FISE</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemeValeDensity"><span>Densidad de beneficiarios</span></label>
+            <div class="thematic-module-label">Ahorro GNV</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemeGnvConsumption"><span>Consumos y demanda GNV</span></label>
+            <div class="thematic-module-label">Fotovoltaico</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemePhotovoltaic"><span>Operatividad fotovoltaica</span></label>
+            <div class="thematic-module-label">Masificación</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemeMasification"><span>Avance de redes de gas</span></label>
+            <div class="thematic-module-label">Electricidad al Toque</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemeElectricity"><span>Estado de sistemas eléctricos</span></label>
+            <div class="thematic-module-label">MCTER</div>
+            <label class="layer-option"><input type="checkbox" id="layerThemeMcter"><span>Densidad de suministros compensados</span></label>
+            <div class="layer-legend thematic-shared-legend">
+              <div class="legend-row"><span class="legend-circle" style="background:#22c55e55;border-color:#16a34a"></span>Baja / operativa</div>
+              <div class="legend-row"><span class="legend-circle" style="background:#f59e0b55;border-color:#d97706"></span>Media / en proceso</div>
+              <div class="legend-row"><span class="legend-circle" style="background:#ef444455;border-color:#dc2626"></span>Alta / crítica</div>
+            </div>
+          </div>
+          <div class="map-floating-panel indices-panel" id="satellitePanel">
+            <div class="indices-panel-head"><div class="floating-title">Índices</div><button type="button" id="closeSatellitePanelBtn" aria-label="Cerrar Índices" title="Cerrar" onclick="event.preventDefault();event.stopPropagation();this.closest('#satellitePanel').classList.remove('open')">×</button></div>
+            <label class="layer-option"><input type="radio" name="satelliteMode" value="ndvi"><span>NDVI</span></label>
+            <label class="layer-option"><input type="radio" name="satelliteMode" value="builtup"><span>Built Up</span></label>
+            <div class="layer-legend">
+              <div class="legend-row"><span class="legend-line green"></span>NDVI / vigor referencial</div>
+              <div class="legend-row"><span class="legend-line" style="border-color:#f97316"></span>Built Up / zona urbanizada</div>
+              <div class="legend-row" style="font-size:10px;color:#64748b">Al activar una opción se habilita el selector de fechas.</div>
+            </div>
+          </div>
+          <div class="location-search" id="locationSearchBox">
+            <div class="location-search-row">
+              <input id="locationSearchInput" type="search" placeholder="Buscar ubicación en Perú">
+              <button id="locationSearchBtn" type="button" title="Buscar ubicación">⌕</button>
+            </div>
+            <small>Ej.: Arequipa, Cusco, Av. Javier Prado</small>
+            <div class="location-results" id="locationSearchResults"></div>
+          </div>
+          <div class="layer-label" id="activeLayerLabel">Capa activa: <span style="color:#67e8f9">Estrato INEI</span></div>
+          <div class="date-select" id="dateSelectBox"><label>Selector de fechas</label><select id="dateLayerSelect"><option>2026-04-23 (20.0%)</option><option>2026-03-18 (35.0%)</option><option>2026-02-10 (50.0%)</option></select></div>
+          <div class="heat-legend" id="morosityLegend"><span class="heat-legend-title">Mapa de calor · Pendiente de recaudación</span><span class="heat-step">Baja</span><i class="heat-gradient"></i><span class="heat-step">Crítica</span></div>
+          <div class="map-timeline-panel dock-bottom" id="mapTimelinePanel">
+            <div class="timeline-drag-handle" id="timelineDragHandle">
+              <span class="timeline-title" id="timelineTitle">Línea de tiempo del expediente</span>
+              <div class="timeline-actions">
+                <button class="timeline-mini-btn" id="timelineDockBottomBtn" type="button" title="Acoplar abajo">▭</button>
+                <button class="timeline-mini-btn" id="timelineDockRightBtn" type="button" title="Acoplar derecha">▮</button>
+                <button class="timeline-close" id="closeTimelineBtn" type="button" title="Ocultar línea de tiempo">×</button>
+              </div>
+            </div>
+            <div class="timeline-track" id="timelineTrack"></div>
+          </div>
+          
+          <div class="map-legend-float" id="mapLegendFloat">
+            <div class="legend-title" onclick="toggleMapLegend()"><svg class="svg-icon" aria-hidden="true"><use href="#i-clipboard"></use></svg> Leyenda <span id="legendToggleIcon">▾</span></div>
+            <div class="legend-items" id="legendItems">
+              <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>Liquidados</div>
+              <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Pendientes de liquidación</div>
+              <div class="legend-item"><span class="legend-dot" style="background:#0ea5e9"></span>Dentro de plazo</div>
+              <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>Fuera de plazo</div>
+            </div>
+          </div>
+          <div class="map-status">Leaflet · OSM · GeoJSON</div>
+          <div class="draw-hint" id="toolHint"><span id="toolHintText">Herramienta: Seleccionar objetos</span><div><button id="finishDrawBtn" type="button">Finalizar</button><button id="clearDrawBtn" type="button">Limpiar</button></div></div>
+        </div>
+      </section>
+
+      <aside class="info-panel">
+        <div class="info-top">
+          <div class="info-title"><p id="infoContextLabel">Selección:</p><h2 id="infoName">PROYECTO SAUNA 1</h2><p id="infoPlace">Arequipa – Arequipa</p></div>
+          <div class="utils bonogas-utils-source" aria-hidden="true">
+            <div class="utils-head"><div><h3>Utilitarios</h3><p>Herramientas del proyecto</p></div><span class="badge">13 módulos</span></div>
+            <div class="grid-utils"></div>
+          </div>
+          <div class="project-details" id="details"></div>
+          <div class="supply-card empty" id="supplyDetails"><h3>Detalle de suministro</h3><p class="supply-hint">Seleccione un lote o vivienda en el mapa para visualizar el suministro, beneficiario, instalación y empresa instaladora.</p></div>
+        </div>
+        <div class="scroll-section">
+          <div class="area-summary empty" id="areaStatsDetails"><h3>Resumen del área seleccionada</h3><p class="area-sub">Dibuje un círculo o polígono para calcular conexiones, beneficiarios, liquidaciones y total de morosidad dentro del área.</p></div>
+          <div class="chips" id="statsFilters"><button class="chip-filter active" data-filter="servicioElectrico">Servicio eléctrico</button><button class="chip-filter" data-filter="cocinaGLP">Cocina GLP</button><button class="chip-filter" data-filter="tipoCombustible">Tipo combustible</button><button class="chip-filter" data-filter="estadoInstalacion">Estado beneficiario</button><button class="chip-filter" data-filter="sexo">Sexo</button><button class="chip-filter" data-filter="beneficiarios">Beneficiarios</button></div>
+          <div class="stats"><h3 id="donutTitle">Estadística · Servicio eléctrico</h3><p id="donutSubtitle" style="margin:6px 0 0;color:#94a3b8;font-size:11px;font-weight:800;">Fuente: proyecto seleccionado</p><div class="donut" id="donutChart"><div class="donut-inner"><div><small>Total</small><br><b id="donutCases">0</b></div></div></div><div class="legend" id="donutLegend"><span id="donutLegendA" style="color:#67e8f9">■ Con servicio (0)</span><span id="donutLegendB" style="color:#86efac">■ Sin servicio (0)</span></div><button class="export-excel-btn" id="exportExcelBtn" type="button"><svg class="svg-icon" aria-hidden="true"><use href="#i-chart"></use></svg> Exportar selección</button></div>
+          <div class="corrections-suite">
+            <section class="correction-card correction-card-accent" id="bonogasDeadlineCard">
+              <div class="correction-head">
+                <div>
+                  <h3>Control de plazos Art. 25.9</h3>
+                  <p>Reporte de suministros sin instalacion interna finalizada en plazo mayor o igual a 90 dias calendario.</p>
+                </div>
+                <button class="plazo-art259-info-btn" id="plazoArt259InfoBtn" type="button" title="Ver reporte de suministros" aria-label="Ver reporte de suministros"><svg class="svg-icon" aria-hidden="true"><use href="#i-search"></use></svg></button>
+              </div>
+              <div class="kpi-strip">
+                <div class="mini-kpi"><span>Fuera de plazo</span><b>0</b><small>&gt;= 90 dias calendario</small></div>
+                <div class="mini-kpi"><span>Dentro de plazo</span><b>0</b><small>En construccion</small></div>
+                <div class="mini-kpi"><span>Habilitados</span><b>16</b><small>Solo referencia estadistica</small></div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="project-list-env" id="projectListEnv">
+      <div class="project-list-shell">
+        <div class="project-list-head">
+          <h2>Listar proyectos</h2>
+          <div class="project-list-tools">
+            <button class="btn" id="projectListExportBtn" type="button"><svg class="svg-icon" aria-hidden="true"><use href="#i-file-text"></use></svg> Exportar a Excel</button>
+            <select id="projectListField" aria-label="Filtrar proyectos por campo">
+              <option value="nombre">Nombre</option>
+              <option value="codigo">Código</option>
+              <option value="estado">Estado</option>
+              <option value="tipo">Tipo</option>
+            </select>
+            <input id="projectListSearch" type="search" placeholder="Buscar..." aria-label="Buscar proyecto">
+          </div>
+        </div>
+        <div class="project-list-table-wrap">
+          <table class="project-list-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Estado</th>
+                <th>Tipo de proyecto</th>
+                <th>Beneficiario(s)</th>
+                <th>Ver documento</th>
+                <th>Ver imagen</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="projectListTableBody"></tbody>
+          </table>
+        </div>
+        <div class="project-list-pagination">
+          <button id="projectListPrevBtn" type="button">‹ Anterior</button>
+          <span id="projectListPageLabel">Página 1 de 1</span>
+          <button id="projectListNextBtn" type="button">Siguiente ›</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="project-delete-env" id="projectDeleteEnv">
+      <div class="project-delete-shell">
+        <h2>Eliminar proyecto</h2>
+        <p class="project-delete-copy">Escribe el código del proyecto que deseas eliminar. <strong>Esta acción es irreversible.</strong></p>
+        <form class="project-delete-form" id="projectDeletePageForm">
+          <input id="projectDeleteCode" name="codigo" type="text" placeholder="Código" autocomplete="off" aria-label="Código del proyecto">
+          <button type="submit">Eliminar definitivamente</button>
+        </form>
+        <div class="project-delete-result" id="projectDeleteResult" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="project-create-env" id="projectCreateEnv">
+      <form class="project-create-shell" id="projectCreatePageForm">
+        <div class="project-create-head">
+          <h2>Crear proyecto</h2>
+          <div class="project-create-actions">
+            <button class="btn dark" id="downloadProjectFormatBtn" type="button"><svg class="svg-icon" aria-hidden="true"><use href="#i-file-text"></use></svg> Descargar formato</button>
+            <button class="btn dark" id="massProjectGenerateBtn" type="button"><svg class="svg-icon" aria-hidden="true"><use href="#i-upload"></use></svg> Generar masivos</button>
+          </div>
+        </div>
+
+        <div class="project-create-grid">
+          <div class="project-create-field"><label>Nombre del proyecto</label><input name="nombre" placeholder="Red de Gas Natural - Sector 010101" required></div>
+          <div class="project-create-field"><label>Tipo de proyecto</label><select name="tipo" required><option value="">-- Seleccione --</option><option>Masificación de gas FISE</option><option>Servicio GLP</option><option>Conversión energética</option><option>Validación de beneficiarios</option></select></div>
+          <div class="project-create-field"><label>Ubigeo</label><input name="ubigeo" placeholder="010101"></div>
+          <div class="project-create-field"><label>Departamento</label><select name="departamento"><option>Amazonas</option><option>Lima</option><option>Arequipa</option><option>Cajamarca</option><option>Piura</option></select></div>
+          <div class="project-create-field"><label>Provincia</label><select name="provincia"><option value="">-- Seleccione --</option><option>Lima</option><option>Bagua</option><option>Arequipa</option><option>Utcubamba</option></select></div>
+          <div class="project-create-field"><label>Distrito</label><select name="distrito"><option value="">-- Seleccione --</option><option>Magdalena</option><option>Yanahuara</option><option>Sauna</option><option>Bagua</option><option>Cajaruro</option></select></div>
+        </div>
+
+        <div class="project-create-grid three" style="margin-top:18px">
+          <div class="project-create-field"><label>Zona</label><select name="zona"><option value="">-- Seleccione --</option><option>Urbana</option><option>Rural</option><option>Periurbana</option></select></div>
+          <div class="project-create-field"><label>Centro poblado</label><select name="centroPoblado"><option value="">-- Seleccione --</option><option>Centro urbano</option><option>Anexo</option><option>Comunidad</option></select></div>
+          <div class="project-create-field"><label>Distribuidor</label><select name="distribuidor"><option value="">-- Seleccione --</option><option>Distribuidora Norte</option><option>Calidda</option><option>Contugas</option></select></div>
+        </div>
+
+        <div class="project-create-grid" style="margin-top:18px">
+          <div class="project-create-field"><label>Código Único</label><input name="id" placeholder="FISE-2026-004" required></div>
+          <div class="project-create-field"><label>SNIP</label><input name="snip"></div>
+          <div class="project-create-field"><label>Región Natural</label><select name="regionNatural"><option value="">-- Seleccione --</option><option>Costa</option><option>Sierra</option><option>Selva</option></select></div>
+          <div class="project-create-field"><label>Región por Altitud</label><select name="regionAltitud"><option value="">-- Seleccione --</option><option>Baja</option><option>Media</option><option>Alta</option></select></div>
+          <div class="project-create-field"><label>Tipo de RER</label><select name="rer"><option value="">-- Seleccione --</option><option>Residencial</option><option>No residencial</option><option>Comercial</option></select></div>
+          <div class="project-create-field"><label>Estado del proyecto</label><select name="estado"><option value="">-- Seleccione --</option><option>En evaluación</option><option>Aprobado</option><option>Observado</option><option>En campo</option></select></div>
+        </div>
+
+        <div class="project-create-section">
+          <div class="project-create-section-title"><h3>Documentación y multimedia</h3></div>
+          <div class="project-create-docs">
+            <button class="btn red" type="button" id="createPageAddDocBtn"><svg class="svg-icon" aria-hidden="true"><use href="#i-file-text"></use></svg> Añadir doc.</button>
+            <button class="btn" type="button" id="createPageViewDocsBtn"><svg class="svg-icon" aria-hidden="true"><use href="#i-check"></use></svg> Ver docs</button>
+            <button class="btn" type="button" id="createPageUploadImgBtn" style="background:#31c48d"><svg class="svg-icon" aria-hidden="true"><use href="#i-image"></use></svg> Subir img.</button>
+            <button class="btn dark" type="button" id="createPageViewImgsBtn"><svg class="svg-icon" aria-hidden="true"><use href="#i-camera"></use></svg> Ver imgs</button>
+          </div>
+        </div>
+
+        <div class="project-create-field full" style="margin-top:22px"><label>Descripción</label><textarea name="descripcion" placeholder="Detalle de la intervención..."></textarea></div>
+
+        <div class="project-create-section">
+          <div class="project-create-section-title"><h3>Coordenadas / Geometría</h3><button class="btn dark" id="createPageOpenGisBtn" type="button"><svg class="svg-icon" aria-hidden="true"><use href="#i-map-pin"></use></svg> Abrir GIS</button></div>
+          <p style="margin:0;color:#9ba9cc;font-weight:850">Sin geometría registrada.</p>
+        </div>
+
+        <div class="project-create-section" id="createPageBenefSection">
+          <div class="project-create-section-title">
+            <h3 id="createPageBenefCount">Beneficiarios (0)</h3>
+            <div class="project-create-actions" id="createPageBenefActions"><button class="btn dark" type="button" id="createPageImportBtn">Importar</button><button class="btn dark" type="button" id="createPageExportBtn">Exportar</button><button class="btn" type="button" id="createPageAddBeneficiaryBtn" style="background:#31c48d">+ Agregar</button></div>
+            <div class="project-create-actions" id="createPageBonogasActions" hidden><button class="btn dark" type="button" id="createPageBonogasFormatBtn">Descargar formato</button><button class="btn" type="button" id="createPageBonogasExcelBtn" style="background:#31c48d">Subir Excel</button></div>
+          </div>
+          <div id="createPageBenefDefaultWrap">
+            <div class="project-beneficiary-card">
+              <div class="project-beneficiary-head"><h4>Beneficiario #1</h4><button class="btn red" type="button" id="createPageRemoveBeneficiaryBtn">Eliminar</button></div>
+              <div class="project-create-grid">
+                <div class="project-create-field"><label>Tipo de intervención</label><select name="benefTipoIntervencion"><option value="">-- Seleccione --</option><option>Instalación interna</option><option>Conexión domiciliaria</option><option>Habilitación</option></select></div>
+                <div class="project-create-field"><label>Tipo de beneficiario</label><input name="benefTipo" placeholder="Residencial"></div>
+                <div class="project-create-field"><label>ID beneficiario</label><input name="benefId" placeholder="BEN-001"></div>
+                <div class="project-create-field"><label>RUC / DNI</label><input name="benefDoc" placeholder="20123456789"></div>
+                <div class="project-create-field"><label>Razón social</label><input name="benefRazon" placeholder="Empresa o institución"></div>
+                <div class="project-create-field"><label>Tipo de Entidad</label><select name="benefEntidad"><option value="">-- Seleccione --</option><option>Persona natural</option><option>Empresa</option><option>Institución</option></select></div>
+                <div class="project-create-field"><label>Consumo 12 meses (kWh)</label><input name="benefConsumo" type="number"></div>
+                <div class="project-create-field"><label>Estado beneficiario</label><input name="benefEstado" value="Activo"></div>
+                <div class="project-create-field"><label>Monto vale (S/)</label><input name="benefMonto" placeholder="Opcional"></div>
+                <div class="project-create-field"><label>Tipo combustible / programa</label><select name="benefPrograma"><option>GLP</option><option>Gas natural</option><option>Electricidad</option></select></div>
+              </div>
+            </div>
+          </div>
+          <div id="createPageBonogasWrap" hidden>
+            <p class="bonogas-benef-upload-hint" id="createPageBonogasExcelMsg">Suba un archivo Excel (.xlsx / .xls) con los beneficiarios del proyecto Bono Gas.</p>
+            <div class="bonogas-benef-table-wrap" id="createPageBonogasTableWrap" hidden>
+              <table class="bonogas-benef-table" id="createPageBonogasTable">
+                <thead><tr><th>DATOS_TITULAR</th><th>CODIGO_USUARIO</th><th>ZONA</th><th>REGIONES</th><th>DEPARTAMENTO</th><th>PROVINCIA</th><th>DISTRITO</th><th>CENTROPOBLADO</th></tr></thead>
+                <tbody id="createPageBonogasTableBody"></tbody>
+              </table>
+            </div>
+            <input type="file" id="createPageBonogasExcelInput" accept=".xlsx,.xls,.csv" hidden>
+          </div>
+        </div>
+
+        <div class="project-create-footer">
+          <button class="btn" type="submit" style="background:#31c48d">Guardar</button>
+          <button class="btn dark" id="cancelProjectCreatePageBtn" type="button">Cancelar</button>
+        </div>
+      </form>
+    </section>

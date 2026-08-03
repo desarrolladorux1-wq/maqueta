@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Iniciar sesión · Maqueteo FISE</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../style/style.css">
+  <style>
+#loginOverlay{
+  position:fixed;inset:0;z-index:99999;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  font-family:'Inter',sans-serif;
+  color:#fff;
+  background:#cbd5e3;
+  overflow:auto;
+}
+#loginOverlay *{box-sizing:border-box}
+#loginOverlay[hidden]{display:none!important}
+#loginOverlay .login-shell{
+  display:flex;
+  width:min(880px,96vw);
+  min-height:min(520px,92vh);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 24px 60px rgba(17,23,47,.14);
+  position:relative;
+  background:#11172f;
+}
+#loginOverlay .login-brand-panel{
+  flex:0 0 42%;
+  min-width:0;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:48px 36px;
+  position:relative;
+  z-index:2;
+}
+#loginOverlay .login-brand-panel::after{
+  content:'';
+  position:absolute;
+  right:-52px;
+  top:50%;
+  transform:translateY(-50%);
+  width:104px;
+  height:118%;
+  background:#fff;
+  border-radius:50%;
+  z-index:1;
+  pointer-events:none;
+}
+#loginOverlay .login-paulet-logo{
+  position:absolute;
+  top:22px;
+  left:22px;
+  width:min(96px,28vw);
+  height:auto;
+  z-index:3;
+}
+#loginOverlay .login-brand-center{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:1;
+  width:100%;
+  position:relative;
+  z-index:2;
+}
+#loginOverlay .login-fise-logo{
+  display:block;
+  max-width:min(220px,72%);
+  width:100%;
+  height:auto;
+}
+#loginOverlay .login-form-panel{
+  flex:1;
+  min-width:0;
+  background:linear-gradient(165deg,#1e3a5f 0%,#17233f 42%,#11172f 100%);
+  padding:52px 48px 44px 72px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+#loginOverlay .login-form-panel h1{
+  font-size:32px;
+  font-weight:800;
+  margin:0 0 28px;
+  color:#f8fbff;
+  letter-spacing:-.02em;
+}
+#loginOverlay .field{position:relative;margin-bottom:14px}
+#loginOverlay .field .icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:#64748b;width:18px;height:18px;pointer-events:none;
+}
+#loginOverlay .field input,
+#loginOverlay .field select{
+  width:100%;
+  padding:13px 42px 13px 42px;
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:10px;
+  background:#eef0fb;
+  color:#1f2937;
+  font-size:14px;
+  outline:none;
+  appearance:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+#loginOverlay .field input:focus,
+#loginOverlay .field select:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 3px rgba(56,189,248,.18);
+}
+#loginOverlay .field select{
+  cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+}
+#loginOverlay .field .eye{left:auto;right:14px;cursor:pointer;pointer-events:auto;color:#64748b}
+#loginOverlay .forgot{text-align:right;margin:8px 2px 22px}
+#loginOverlay .forgot a{color:#93c5fd;font-size:13px;text-decoration:none;font-weight:600}
+#loginOverlay .forgot a:hover{color:#bfdbfe}
+#loginOverlay .btn{
+  width:100%;
+  padding:13px;
+  border:none;
+  border-radius:999px;
+  background:#fff;
+  color:#11172f;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s,background .15s;
+}
+#loginOverlay .btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 24px rgba(0,0,0,.22);
+  background:#f8fafc;
+}
+#loginOverlay .login-demo{margin:-4px 0 18px;padding:10px 12px;border:1px solid rgba(56,189,248,.24);border-radius:10px;background:rgba(14,165,233,.08);color:#bae6fd;font-size:12px;line-height:1.45}
+#loginOverlay .login-error{display:none;margin:0 0 14px;padding:10px 12px;border-radius:9px;background:rgba(239,68,68,.14);color:#fecaca;font-size:12px;font-weight:700}
+#loginOverlay .login-error.open{display:block}
+.access-screen{min-height:100vh;padding:24px;background:linear-gradient(135deg,#263e68,#0d1329 72%);color:#0f1b39;font-family:Inter,Segoe UI,sans-serif}
+.access-screen *{box-sizing:border-box}.access-screen[hidden],.access-head[hidden]{display:none!important}.access-shell{width:min(1060px,100%);min-height:0;margin:auto;padding:28px 34px 24px;border-radius:22px;background:#fff;box-shadow:0 30px 75px rgba(2,8,23,.3)}.access-head{display:flex;align-items:center;justify-content:space-between}.access-logo{width:74px;height:48px;object-fit:contain}
+.access-content{max-width:none;margin:22px auto 0}.access-ok{display:inline-block;padding:6px 13px;border-radius:999px;background:#dcfce7;color:#187b3d;font-size:13px;font-weight:800}.access-content h1{margin:14px 0 6px;font-size:36px}.access-content>p{margin:0;color:#64748b;font-size:15px}
+.access-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.access-card{min-height:150px;padding:16px;border:1px solid #d5dfed;border-radius:15px;background:#f8fafc;text-align:left;cursor:pointer;transition:.18s}.access-card:hover{transform:translateY(-3px);border-color:#60a5fa;box-shadow:0 16px 32px rgba(30,64,175,.1)}
+.access-card .access-initials{display:grid;place-items:center;width:50px;height:50px;border-radius:14px;background:#dbeafe;color:#2854d7;font-size:15px;font-weight:900}.access-card.gnv .access-initials{background:#dcfce7;color:#22833f}.access-card h2{margin:13px 0 4px;font-size:19px}.access-card p{margin:0;color:#64748b;font-size:12px}.access-card strong{display:block;margin-top:11px;color:#315be8;font-size:13px}.access-card.gnv strong{color:#22833f}.access-logout{margin-top:20px;border:0;background:transparent;color:#64748b;font-size:14px;font-weight:700;cursor:pointer}
+.module-auth{max-width:1220px;margin:36px auto 0;border:1px solid #93aac2;background:#fff}.module-auth[hidden],.access-overview[hidden]{display:none!important}.module-auth-head{padding:20px 28px;border-bottom:1px solid #9fc5d6;background:#e6f6fc}.module-auth-head img{width:82px;height:64px;object-fit:contain}.module-auth-alert{margin:28px;padding:18px;border:1px solid #eadb84;background:#fffde6;color:#d23d1f;text-align:center;font-size:18px;font-weight:800}.module-auth-grid{display:grid;grid-template-columns:1fr .92fr;gap:34px;padding:0 28px 34px}.module-login-box{border:1px solid #3892d0}.module-login-title{padding:14px 20px;background:#3892d0;color:#fff;font-size:20px;font-weight:850}.module-login-form{padding:30px}.module-login-row{display:grid;grid-template-columns:130px 1fr;align-items:center;gap:14px;margin-bottom:18px}.module-login-row label{text-align:right;font-weight:800}.module-login-row input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #4aa0d7;border-radius:6px;font:inherit}.module-login-error{display:none;margin:8px 0;color:#c53030;font-weight:800}.module-login-error.open{display:block}.module-login-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.module-login-actions button,.module-auth-back{border:0;border-radius:8px;padding:12px 22px;font-weight:800;cursor:pointer}.module-login-submit{background:linear-gradient(#5270b2,#1d3d7d);color:#fff}.module-auth-copy h2{margin:10px 0 20px;font-size:30px}.module-auth-copy p,.module-auth-copy li{color:#40577b;line-height:1.5}.module-auth-footer{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:#e6f6fc}.module-auth-back{background:transparent;color:#204a83}
+@media(max-width:780px){.access-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.access-screen{padding:14px}.access-shell{padding:28px 22px}.access-content h1{font-size:36px}.access-grid,.module-auth-grid{grid-template-columns:1fr}.module-login-row{grid-template-columns:1fr}.module-login-row label{text-align:left}}
+#loginOverlay .footer-credit{
+  position:absolute;
+  bottom:22px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#64748b;
+  font-size:13px;
+  font-weight:600;
+}
+body.login-active{overflow:hidden!important}
+body.login-active .app{visibility:hidden}
+@media (max-width:880px){
+  #loginOverlay{padding:16px 12px 56px}
+  #loginOverlay .login-shell{flex-direction:column;min-height:auto;width:min(440px,96vw)}
+  #loginOverlay .login-brand-panel{
+    flex:none;
+    padding:36px 24px 28px;
+    border-radius:18px 18px 0 0;
+  }
+  #loginOverlay .login-brand-panel::after{display:none}
+  #loginOverlay .login-form-panel{
+    padding:32px 28px 36px;
+    border-radius:0 0 18px 18px;
+  }
+  #loginOverlay .login-form-panel h1{font-size:26px;margin-bottom:22px;text-align:center}
+}
+
+body { margin:0; background:#cbd5e3; }
+#loginOverlay { position:static; min-height:100vh; display:flex; }
+  </style>
+</head>
+<body>
+<div id="loginOverlay">
+  <div class="login-shell">
+    <div class="login-brand-panel">
+      <img src="../logopaulet.png" alt="Paulet" class="login-paulet-logo"/>
+      <div class="login-brand-center">
+        <img src="https://cvcenergia.com.pe/images/beneficiarios-fise/fise-logo.png" alt="FISE" class="login-fise-logo"/>
+      </div>
+    </div>
+    <form class="login-form-panel" id="loginForm" onsubmit="return window.__doLogin(event)">
+      <h1>Bienvenido</h1>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="loginUser" placeholder="Usuario" value="renzo" autocomplete="username" />
+      </div>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="loginPwd" placeholder="Contraseña" value="123456" autocomplete="current-password" />
+        <svg class="icon eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="var p=document.getElementById('loginPwd');p.type=p.type==='password'?'text':'password';"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <div class="field">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <select id="loginModulo" aria-label="Módulo inicial">
+          <option value="vale-fise" selected>Vale FISE</option>
+          <option value="ahorro-gnv">Ahorro GNV</option>
+          <option value="bonogas">Bono Gas</option>
+          <option value="fotovoltaico">Fotovoltaico</option>
+          <option value="masificacion">Masificación</option>
+          <option value="electricidad-al-toque">Electricidad al Toque</option>
+          <option value="mtcer">MTCER</option>
+          <option value="administrador">Administrador</option>
+        </select>
+      </div>
+      <div class="login-demo"><b>Acceso de demostración</b><br>Usuario: renzo · Contraseña: 123456<br>Después de validar, selecciona una aplicación habilitada.</div>
+      <div class="login-error" id="loginError" role="alert">Usuario o contraseña incorrectos.</div>
+      <div class="forgot"><a href="#">¿Olvidó su contraseña?</a></div>
+      <button class="btn" type="submit">Ingresar</button>
+    </form>
+  </div>
+  <div class="footer-credit">
+    <span>Desarrollado por</span>
+    <img src="https://paulet.space/assets/img/login2.svg" alt="i+" style="height:28px;width:auto" />
+  </div>
+</div>
+<section class="access-screen" id="accessScreen" hidden>
+ <div class="access-shell">
+  <div class="access-head" id="accessHead"><img src="../logopaulet.png" alt="Paulet" class="access-logo"><img src="https://cvcenergia.com.pe/images/beneficiarios-fise/fise-logo.png" alt="FISE" class="access-logo"></div>
+  <div class="access-content access-overview" id="accessOverview">
+    <span class="access-ok">Acceso verificado</span>
+    <h1>Hola, Renzo</h1>
+    <p>Tienes acceso a los siguientes módulos. Vale FISE tiene ingreso directo; los demás solicitan sus credenciales de módulo.</p>
+    <div class="access-grid">
+      <button class="access-card" type="button" data-enter-module="vale-fise"><span class="access-initials">VF</span><h2>Vale FISE</h2><p>Ingreso directo</p><strong>Ingresar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="sistema-integral-fise" data-module-name="Sistema Integral FISE" data-module-user="integralfise"><span class="access-initials">SIF</span><h2>Sistema Integral FISE</h2><p>Acceso institucional</p><strong>Autenticar →</strong></button>
+      <button class="access-card gnv" type="button" data-auth-module="sistema-fise-gnv" data-module-name="Sistema FISE GNV" data-module-user="fisegnv"><span class="access-initials">GNV</span><h2>Sistema FISE GNV</h2><p>Gestión del programa GNV</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="bonogas-2" data-module-name="BonoGas 2.0" data-module-user="bonogas"><span class="access-initials">BG</span><h2>BonoGas 2.0</h2><p>Plataforma BonoGas</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="gestion-afiliacion" data-module-name="Sistema de Gestión de Actividades de Afiliación y Seguimiento" data-module-user="afiliacion"><span class="access-initials">GAS</span><h2>Gestión de Afiliación</h2><p>Actividades y seguimiento</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="consulta-saldo-taller" data-module-name="Consulta tu saldo / Consulta Taller" data-module-user="consultas"><span class="access-initials">CST</span><h2>Consulta saldo / Taller</h2><p>Consultas para beneficiarios y talleres</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="wiki-fise" data-module-name="Wiki FISE" data-module-user="wikifise"><span class="access-initials">WF</span><h2>Wiki FISE</h2><p>Información institucional</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="fise-consultas-api" data-module-name="FISE CONSULTAS API" data-module-user="fiseapi"><span class="access-initials">API</span><h2>FISE CONSULTAS API</h2><p>Servicios de consulta</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="gnv-api" data-module-name="GNV API" data-module-user="gnvapi"><span class="access-initials">API</span><h2>GNV API</h2><p>Integración de datos GNV</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="fiseforms-api" data-module-name="FISEFORMS API" data-module-user="fiseforms"><span class="access-initials">FF</span><h2>FISEFORMS API</h2><p>Formularios y evidencias</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="doc-services-api" data-module-name="DOC SERVICES API" data-module-user="docservices"><span class="access-initials">DOC</span><h2>DOC SERVICES API</h2><p>Documentos y expedientes</p><strong>Autenticar →</strong></button>
+      <button class="access-card" type="button" data-auth-module="consultas-inhabilitados" data-module-name="FISE Consultas Instaladoras / Promotores / Empresas inhabilitadas" data-module-user="consultafise"><span class="access-initials">FC</span><h2>Consultas FISE</h2><p>Instaladoras, promotores e inhabilitados</p><strong>Autenticar →</strong></button>
+    </div>
+    <button class="access-logout" type="button" id="accessBack">← Cerrar sesión</button>
+  </div>
+  <section class="module-auth" id="moduleAuth" hidden>
+    <div class="module-auth-head"><img src="https://cvcenergia.com.pe/images/beneficiarios-fise/fise-logo.png" alt="FISE"></div>
+    <div class="module-auth-alert" id="moduleAuthAlert">Confirma las credenciales del módulo para continuar.</div>
+    <div class="module-auth-grid">
+      <div class="module-login-box"><div class="module-login-title" id="moduleLoginTitle">Ingreso al módulo</div><form class="module-login-form" id="moduleAuthForm"><div class="module-login-row"><label for="moduleUser">Usuario</label><input id="moduleUser" autocomplete="username"></div><div class="module-login-row"><label for="modulePwd">Contraseña</label><input id="modulePwd" type="password" value="" autocomplete="current-password"></div><div class="module-login-error" id="moduleAuthError">Usuario o contraseña del módulo incorrectos.</div><div class="module-login-actions"><button class="module-login-submit" type="submit">Ingresar</button></div></form></div>
+      <div class="module-auth-copy"><h2 id="moduleCopyTitle">FISE</h2><p id="moduleCopyText">Confirma el acceso al módulo seleccionado para continuar.</p><h3>Objetivos / Programas:</h3><ol><li>Masificación del Gas Natural.</li><li>Ampliación de frontera energética.</li><li>Promoción y acceso a energía.</li><li>Gestión de programas FISE.</li></ol><p><b>Usuario:</b> <span id="moduleDemoUser"></span> · <b>Contraseña de demostración:</b> 123456</p></div>
+    </div>
+    <div class="module-auth-footer"><button class="module-auth-back" type="button" id="moduleAuthBack">← Volver a mis accesos</button><span>v2026.07.24</span></div>
+  </section>
+ </div>
+</section>
+
+<script>
+window.__doLogin = function(ev) {
+  if(ev) ev.preventDefault();
+  var user = (document.getElementById('loginUser').value || '').trim().toLowerCase();
+  var pwd = document.getElementById('loginPwd').value || '';
+  var error = document.getElementById('loginError');
+  if(user !== 'renzo' || pwd !== '123456'){
+    if(error) error.classList.add('open');
+    return false;
+  }
+  if(error) error.classList.remove('open');
+  try {
+    sessionStorage.setItem('maqueteo_logged_in', '1');
+    sessionStorage.setItem('maqueteo_user', 'renzo');
+  } catch(e) {}
+  var selectedModule = document.getElementById('loginModulo').value || 'vale-fise';
+  if(selectedModule !== 'vale-fise'){
+    try{sessionStorage.setItem('maqueteo_modulo',selectedModule);}catch(e){}
+    location.href = '../index.html?modulo=' + encodeURIComponent(selectedModule);
+    return false;
+  }
+  try{sessionStorage.setItem('maqueteo_modulo','vale-fise');}catch(e){}
+  location.href='../index.html?modulo=vale-fise&showApps=auth';
+  return false;
+};
+document.querySelectorAll('[data-enter-module]').forEach(function(button){
+  button.addEventListener('click',function(){
+    var module=button.getAttribute('data-enter-module');
+    try{sessionStorage.setItem('maqueteo_modulo',module);}catch(e){}
+    location.href='../index.html?modulo='+encodeURIComponent(module);
+  });
+});
+document.querySelectorAll('[data-auth-module]').forEach(function(button){
+  button.addEventListener('click',function(){
+    var moduleName=button.getAttribute('data-module-name');
+    var moduleUser=button.getAttribute('data-module-user');
+    window.__selectedAuthModule=button.getAttribute('data-auth-module');
+    window.__selectedAuthUser=moduleUser;
+    document.getElementById('moduleAuthAlert').textContent='Para ingresar a '+moduleName+', autentícate con tus credenciales FISE.';
+    document.getElementById('moduleLoginTitle').textContent='Ingreso a '+moduleName;
+    document.getElementById('moduleCopyTitle').textContent=moduleName;
+    document.getElementById('moduleCopyText').textContent='Confirma el acceso a '+moduleName+' para continuar con las funciones habilitadas para tu perfil.';
+    document.getElementById('moduleDemoUser').textContent=moduleUser;
+    document.getElementById('moduleUser').value=moduleUser;
+    document.getElementById('modulePwd').value='';
+    document.getElementById('accessOverview').hidden=true;
+    document.getElementById('accessHead').hidden=true;
+    document.getElementById('moduleAuth').hidden=false;
+    document.getElementById('modulePwd').focus();
+  });
+});
+document.getElementById('moduleAuthBack').addEventListener('click',function(){
+  document.getElementById('moduleAuth').hidden=true;
+  document.getElementById('accessHead').hidden=false;
+  document.getElementById('accessOverview').hidden=false;
+  document.getElementById('moduleAuthError').classList.remove('open');
+});
+document.getElementById('moduleAuthForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var user=(document.getElementById('moduleUser').value||'').trim().toLowerCase();
+  var pwd=document.getElementById('modulePwd').value||'';
+  var error=document.getElementById('moduleAuthError');
+  var module=window.__selectedAuthModule||'ahorro-gnv';
+  var expectedUser=window.__selectedAuthUser||'gnv';
+  if(user!==expectedUser||pwd!=='123456'){error.classList.add('open');return;}
+  error.classList.remove('open');
+  try{
+    sessionStorage.setItem('maqueteo_modulo','vale-fise');
+    sessionStorage.setItem('maqueteo_servicio_externo',module);
+    sessionStorage.setItem('maqueteo_'+module.replace(/-/g,'_')+'_authenticated','1');
+  }catch(ex){}
+  location.href='../index.html?modulo=vale-fise&servicio='+encodeURIComponent(module);
+});
+document.getElementById('accessBack').addEventListener('click',function(){
+  document.getElementById('accessScreen').hidden=true;
+  document.getElementById('loginOverlay').hidden=false;
+});
+</script>
+</body>
+</html>

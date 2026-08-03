@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" role="img" aria-label="FISE">
+  <rect width="240" height="96" rx="14" fill="#fff"/>
+  <path d="M45 82C22 70 18 48 35 28c2 14 11 18 13 29 8-12 2-26 20-43 1 17 16 25 16 43 0 18-14 30-31 30-3 0-6-1-8-2z" fill="#f97316"/>
+  <path d="M46 76c-10-8-10-19-2-29 1 8 7 11 8 18 5-7 3-14 11-23 1 10 9 15 9 25 0 10-8 17-18 17-3 0-6-1-8-2z" fill="#facc15"/>
+  <text x="98" y="55" fill="#172554" font-family="Arial,Helvetica,sans-serif" font-size="37" font-weight="800" letter-spacing="2">FISE</text>
+  <text x="99" y="76" fill="#475569" font-family="Arial,Helvetica,sans-serif" font-size="10" font-weight="700">FONDO DE INCLUSIÓN SOCIAL ENERGÉTICO</text>
+</svg>
