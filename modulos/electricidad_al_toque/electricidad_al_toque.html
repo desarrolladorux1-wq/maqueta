@@ -1,0 +1,2077 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programa Electricidad al Toque · SatControl</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    :root{
+      --bg:#09101f;--side:#071023;--top:#17233f;--panel:#17233f;--panel2:#0d1630;--border:#293b67;
+      --text:#f8fbff;--muted:#93a4c7;--cyan:#22d3ee;--cyan2:#1b6f8a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden}
+    button,input,select{font:inherit}button{cursor:pointer}
+    ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#0b1328}::-webkit-scrollbar-thumb{background:#1b6f8a;border-radius:999px}
+    .app{height:100vh;display:grid;grid-template-columns:280px 1fr;transition:.25s ease}
+    .app.sidebar-hidden{grid-template-columns:0 1fr}
+    .sidebar{background:var(--side);border-right:1px solid #1f3156;display:flex;flex-direction:column;min-height:0;box-shadow:20px 0 45px #0006;z-index:20;overflow:hidden;transition:.25s ease}
+    .app.sidebar-hidden .sidebar{width:0;opacity:0;border-right:0}
+    .logo{padding:24px 20px 16px;text-align:center}.logo-img{display:block;width:112px;max-width:100%;height:auto;margin:0 auto 12px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));border-radius:0;background:transparent;padding:0}.brand{display:none}.brand-sub{font-size:11px;color:#94a3b8;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .nav{padding:10px 15px;overflow:auto;flex:1}.nav button,.bottom button{width:100%;border:0;background:transparent;color:#dbe8ff;padding:12px 14px;border-radius:14px;font-weight:850;text-align:left;display:flex;gap:12px;align-items:center}.nav button:hover,.nav button.active{background:#1c2745}.nav .ico,.bottom .ico{width:26px;text-align:center}.subnav{margin:5px 0 12px 40px;color:#afc0de;font-size:13px;font-weight:700}.subnav div{padding:8px;border-radius:10px}.subnav div.active,.subnav div:hover{background:#0e749033;color:#e0f2fe;border-left:1px solid #22d3ee}.bottom{border-top:1px solid #ffffff22;padding:14px}.bottom .logout{background:#101a33;color:#ff8585}
+    .main{min-width:0;display:grid;grid-template-rows:68px 1fr;height:100vh;min-height:0}
+    .topbar{background:var(--top);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-start;padding:0 18px 0 14px;gap:10px;z-index:10}.topbar h1{font-size:15px;margin:0;font-weight:950;letter-spacing:.01em}.top-actions{display:flex;align-items:center;gap:12px}.top-actions.metrics{margin-left:auto}.title-block{display:flex;align-items:center;min-width:0}.pill-top{border:1px solid var(--border);background:#0d1630;border-radius:18px;padding:10px 12px;font-size:12px;font-weight:900}.pill-top b{color:#a5f3fc}
+    .content{height:calc(100vh - 68px);min-height:0;display:grid;grid-template-columns:320px minmax(0,1fr) 380px;gap:18px;padding:18px;overflow:hidden;transition:grid-template-columns .25s ease,gap .25s ease,padding .25s ease}
+    .content.left-hidden{grid-template-columns:0 minmax(0,1fr) 380px}
+    .content.right-hidden{grid-template-columns:320px minmax(0,1fr) 0}
+    .content.left-hidden.right-hidden{grid-template-columns:1fr;gap:0;padding:12px}
+    .content.left-hidden.right-hidden .left-panel,.content.left-hidden.right-hidden .right-panel{display:none;width:0;min-width:0;opacity:0;border:0;padding:0;overflow:hidden;pointer-events:none}
+    .content.left-hidden.right-hidden .map-wrap{grid-column:1;grid-row:1;width:100%;min-width:0}
+    .card{border:1px solid var(--border);border-radius:22px;background:var(--panel);box-shadow:0 20px 60px #0005;overflow:hidden;min-height:0;transition:.25s ease}
+    .content.left-hidden .left-panel,.content.right-hidden .right-panel{width:0;min-width:0;opacity:0;border:0;padding:0;overflow:hidden;pointer-events:none}
+    .left-panel{display:flex;flex-direction:column}.panel-head{padding:17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-head h2{margin:0;font-size:17px;font-weight:950}.panel-actions{display:flex;align-items:center;gap:10px}.toggle-btn{border:1px solid #334155;background:#0d1630;color:#e2e8f0;border-radius:12px;width:36px;height:36px;display:grid;place-items:center;font-size:18px;font-weight:950}.toggle-btn:hover{background:#1b6f8a}.search{padding:14px 16px 10px}.search input,.search select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:#0d1630;color:#fff;font-weight:750;outline:none}.stack{display:grid;gap:10px;padding:0 16px 16px;overflow:auto}
+    .mini{border:1px solid #ffffff18;background:var(--panel2);border-radius:18px;padding:12px}.mini h3{margin:0 0 10px;font-size:14px;color:#e0f2fe}.mini p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.35;font-weight:800}.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kpi{border:1px solid #ffffff16;background:#111a31;border-radius:13px;padding:9px}.kpi span{display:block;color:#93a4c7;font-size:10px;font-weight:900}.kpi b{display:block;margin-top:3px;color:#fff;font-size:18px;font-weight:950}.utils-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.util-btn{border:1px solid #293b67;background:#111a31;color:#dbeafe;border-radius:13px;padding:10px 8px;font-size:11px;font-weight:900}.util-btn.active,.util-btn:hover{background:#0e749033;border-color:#22d3ee;color:#ecfeff}.util-btn.icon-only{height:52px;display:grid;place-items:center;padding:0}.util-ico{display:inline-flex;align-items:center;justify-content:center}.util-svg{width:24px;height:24px;stroke:#dbeafe;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.util-btn.active .util-svg,.util-btn:hover .util-svg{stroke:#ecfeff}.util-svg.fill-accent{fill:#dbeafe;stroke:none}.circle-actions .util-btn{height:auto;padding:10px 8px}.selection-badge{border-radius:999px;background:#0e749033;color:#a5f3fc;padding:4px 8px;font-size:10px;font-weight:950}.circle-config{display:none;margin-top:12px;border:1px solid #22d3ee44;background:#0d1630;border-radius:16px;padding:12px}.circle-config.open{display:block}.circle-config-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.circle-config-top b{font-size:12px;color:#e0f2fe}.radius-value{font-size:12px;font-weight:950;color:#67e8f9}.radius-slider{width:100%;margin:12px 0 8px;accent-color:#22d3ee}.circle-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tiny-note{font-size:10px;color:#93a4c7;font-weight:800;line-height:1.35}.center-marker{width:18px;height:18px;border-radius:50%;background:#22d3ee;border:3px solid #fff;box-shadow:0 0 0 4px rgba(34,211,238,.28),0 4px 12px rgba(0,0,0,.35);position:relative}.center-marker:before,.center-marker:after{content:'';position:absolute;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)}.center-marker:before{width:2px;height:18px}.center-marker:after{width:18px;height:2px}
+    .story{border:1px solid #ffffff16;background:#111a31;border-radius:14px;padding:10px}.story b{display:block;color:#fff;font-size:12px}.story span{display:block;color:#94a3b8;font-size:10px;font-weight:800;line-height:1.3;margin-top:4px}
+    .btn{border:0;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:950;color:#fff;background:var(--cyan2)}.btn.dark{background:#111a31;border:1px solid var(--border)}
+    .map-wrap{position:relative;min-height:0;width:100%;min-width:0}.map-shell{height:100%;width:100%;position:relative;overflow:hidden;border:1px solid #334155;border-radius:24px;background:#0b1328;box-shadow:0 22px 60px #0007}.leaflet-container{height:100%;width:100%;font:inherit;background:#0b1328}.leaflet-control-zoom{margin-right:14px!important;margin-bottom:14px!important}.leaflet-control-attribution{background:#ffffffd8!important;color:#1f2937!important;border-radius:8px 0 0 0!important;font-weight:750}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#111a31;color:#e2e8f0;border:1px solid #334155}.leaflet-popup-content{font-weight:750}.map-side-toggle{position:absolute;top:18px;z-index:720;width:38px;height:38px;border:1px solid #334155;background:#0d1630;color:#e2e8f0;border-radius:12px;display:none;place-items:center;font-size:18px;font-weight:950;box-shadow:0 8px 20px rgba(0,0,0,.26)}.map-side-toggle:hover{background:#1b6f8a}.map-side-toggle.left{left:18px}.map-side-toggle.right{right:18px}.content.left-hidden .map-side-toggle.left,.content.right-hidden .map-side-toggle.right{display:grid}
+    .gis-toolbar{position:absolute;left:18px;top:18px;z-index:700;display:flex;gap:10px;flex-wrap:wrap;max-width:62%}.ge-btn{width:42px;height:42px;border:none;border-radius:12px;background:rgba(255,255,255,.96);color:#334155;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px);transition:all .18s ease;padding:0;font-weight:950}.ge-action-btn{min-width:88px;height:42px;border:none;border-radius:12px;background:rgba(255,255,255,.96);color:#334155;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px);transition:all .18s ease;padding:0 14px;font-weight:950;font-size:12px}.ge-btn svg,.ge-action-btn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}.ge-btn svg .fill-current,.ge-action-btn svg .fill-current{fill:currentColor;stroke:none}.ge-btn:hover,.ge-action-btn:hover{transform:translateY(-1px);background:#ffffff;color:#0f172a;box-shadow:0 4px 12px rgba(0,0,0,.18),0 14px 28px rgba(0,0,0,.16)}.ge-btn.active,.ge-action-btn.active{background:#0ea5e9;color:#ffffff}.info-chip{position:absolute;left:18px;bottom:18px;z-index:700;max-width:430px;background:#09101fdc;border:1px solid #334155;border-radius:16px;padding:10px 13px;color:#e2e8f0;font-size:11px;font-weight:950;box-shadow:0 8px 24px rgba(0,0,0,.24);backdrop-filter:blur(8px)}
+    .map-search{position:absolute;right:18px;top:18px;z-index:700;width:270px;background:rgba(255,255,255,.96);border:1px solid rgba(203,213,225,.95);border-radius:14px;padding:7px 8px;box-shadow:0 2px 7px rgba(0,0,0,.14),0 8px 20px rgba(0,0,0,.11);color:#0f172a}.map-search-row{display:grid;grid-template-columns:1fr 32px;gap:6px;align-items:center}.map-search input{height:31px;border:1px solid #e2e8f0;background:#f8fafc;color:#0f172a;border-radius:10px;padding:0 9px;font-size:10.5px;font-weight:900;outline:none}.map-search button{height:31px;border:0;border-radius:10px;background:#0ea5e9;color:#fff;font-weight:950}.map-search small{display:block;margin:4px 0 0 2px;color:#64748b;font-size:8px;font-weight:850}
+    .right-panel{display:flex;flex-direction:column;padding:14px;overflow:auto}.title-box{border:1px solid #22d3ee55;border-radius:22px;text-align:center;padding:14px;position:relative}.title-box h2{margin:0;font-size:18px}.title-box p{margin:4px 0 0;color:#cbd5e1;font-size:12px;font-weight:800}.right-hide-btn{position:absolute;top:12px;right:12px}
+    .details-grid{display:grid;gap:7px}.detail-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff12;padding-bottom:7px;font-size:11px;font-weight:850}.detail-row:last-child{border-bottom:0;padding-bottom:0}.detail-row span{color:#93a4c7}.detail-row b{text-align:right;color:#fff}
+    .photo-wrap{margin-top:12px;border:1px solid #475569;border-radius:18px;overflow:hidden;background:#0b1328;position:relative}.photo-wrap img{display:block;width:100%;height:205px;object-fit:cover}.photo-caption{padding:9px 12px;border-top:1px solid #293b67;color:#cbd5e1;font-size:10px;font-weight:800}.evidence-carousel-btn{position:absolute;top:88px;z-index:3;width:30px;height:30px;border:1px solid #ffffff66;border-radius:50%;background:#071023d9;color:#fff;font-size:20px;font-weight:950;display:grid;place-items:center;cursor:pointer}.evidence-carousel-btn.prev{left:8px}.evidence-carousel-btn.next{right:8px}.evidence-carousel-dots{display:flex;justify-content:center;gap:6px;padding:8px;background:#071023}.evidence-carousel-dot{width:7px;height:7px;border:0;border-radius:50%;background:#475569;padding:0;cursor:pointer}.evidence-carousel-dot.active{background:#22d3ee;box-shadow:0 0 0 3px #22d3ee22}.evidence-report-link{display:block;margin-top:10px;padding:10px 12px;border:1px solid #38bdf855;border-radius:12px;background:#082f4933;color:#67e8f9;text-align:center;font-size:10px;font-weight:950;text-decoration:none;cursor:default}.legend{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950}.b-ok{background:#10b98122;color:#86efac}.b-warn{background:#f59e0b22;color:#fde68a}.b-off{background:#ef444422;color:#fecaca}.evidence-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.evidence-head small{display:block;color:#93a4c7;font-size:10px;font-weight:900}.thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.thumb-card{border:1px solid #334155;background:#0b1328;border-radius:14px;overflow:hidden}.thumb-card img{display:block;width:100%;height:76px;object-fit:cover}.thumb-card span{display:block;padding:7px 8px;color:#e2e8f0;font-size:10px;font-weight:900}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.summary-kpi{border:1px solid #ffffff16;background:#111a31;border-radius:13px;padding:10px}.summary-kpi span{display:block;color:#93a4c7;font-size:10px;font-weight:900}.summary-kpi b{display:block;margin-top:4px;color:#fff;font-size:22px;font-weight:950}.summary-total{margin-top:10px;border:1px solid #0ea5e955;background:#0d1630;border-radius:14px;padding:10px 12px}.summary-total-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;color:#dbeafe;font-size:12px;font-weight:900;border-bottom:1px solid #ffffff12}.summary-total-row:last-child{border-bottom:0}.progress-list{display:grid;gap:8px;margin-top:12px}.progress-row{display:grid;grid-template-columns:95px 1fr 26px;gap:10px;align-items:center;color:#cbd5e1;font-size:11px;font-weight:900}.progress-track{height:10px;background:#1e293b;border-radius:999px;overflow:hidden}.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#31c48d)}.circle-hint{font-size:11px;color:#a5f3fc;font-weight:900;line-height:1.35;margin-top:8px}.selection-badge{border-radius:999px;background:#0e749033;color:#a5f3fc;padding:4px 8px;font-size:10px;font-weight:950} .leaflet-interactive.selection-ring{stroke:#22d3ee;stroke-width:2.5;fill:#22d3ee;fill-opacity:.08;stroke-dasharray:10 6}
+    .elec-menu{display:block;position:relative}.elec-menu summary{list-style:none}.elec-menu summary::-webkit-details-marker{display:none}.elec-menu[open]>summary,.elec-menu:focus-within>summary{background:#0ea5e9;color:#fff}.floating-panel{position:absolute;left:0;top:52px;z-index:900;width:310px;background:rgba(255,255,255,.97);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;display:none;color:#0f172a;max-height:420px;overflow:auto}.floating-panel.open,.elec-menu[open]>.floating-panel,.elec-menu:focus-within>.floating-panel{display:grid;gap:10px}.floating-title{font-size:12px;font-weight:950;color:#0f172a}.layer-option{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;font-weight:850;color:#334155;cursor:pointer}.layer-option input{accent-color:#0ea5e9}.elec-map-option{width:100%;justify-content:flex-start}.elec-map-option.active{background:#dbeafe;border-color:#38bdf8;color:#075985}.hint{font-size:10px;color:#64748b;font-weight:800;line-height:1.35}.meter-marker{width:14px;height:18px;position:relative}.meter-marker svg{display:block;width:14px;height:18px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.22))}.home-marker{width:16px;height:16px;position:relative}.home-marker svg{display:block;width:16px;height:16px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.22))}.meter-popup-btn{margin-top:8px;border:0;border-radius:8px;background:#0ea5e9;color:#fff;padding:6px 8px;font-weight:800;cursor:pointer}
+    .pin-marker{width:18px;height:18px;background:#ef4444;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 6px 16px rgba(0,0,0,.35)}.pin-marker:after{content:'';position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}.pin-modal{position:fixed;inset:0;background:rgba(2,6,23,.68);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;padding:24px}.pin-modal.open{display:flex}.pin-modal-card{width:min(760px,96vw);max-height:92vh;overflow:auto;border:1px solid #334155;border-radius:22px;background:#0f172a;box-shadow:0 24px 70px rgba(0,0,0,.45);padding:20px}.pin-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.pin-modal-head h2{margin:0;color:#fff;font-size:22px}.pin-modal-head p{margin:6px 0 0;color:#93a4c7;font-size:12px;font-weight:800;line-height:1.35}.pin-close{border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;width:38px;height:38px;font-size:22px;line-height:1}.pin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pin-field{display:grid;gap:6px}.pin-field.full{grid-column:1/-1}.pin-field label{color:#cbd5e1;font-size:11px;font-weight:900}.pin-field input,.pin-field select,.pin-field textarea{width:100%;border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;outline:none}.pin-field textarea{min-height:82px;resize:vertical}.pin-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:16px}.pin-status{color:#67e8f9;font-size:12px;font-weight:900}.pin-btns{display:flex;gap:10px;flex-wrap:wrap}.pin-btn{border:1px solid #334155;background:#111a31;color:#fff;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:900}.pin-btn.success{background:#0f766e;border-color:#0f766e}.tiny-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 8px;background:#0e749033;color:#a5f3fc;font-size:10px;font-weight:950}
+    .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%}.sd-ok{background:#22c55e}.sd-warn{background:#f59e0b}.sd-off{background:#ef4444}
+    .panel-icon-marker{width:14px;height:10px;border:1.5px solid #fff;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+    .toolbar-bottom{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+    .elec-report-note{margin:0 0 8px;color:#cbd5e1;font-size:11px;line-height:1.4;font-weight:800}
+    .elec-report-meta{margin:0 0 12px;padding:10px 12px;border:1px solid #334155;border-radius:14px;background:#0d1630;color:#93a4c7;font-size:10px;font-weight:900;line-height:1.35}
+    .elec-report-btn{width:100%}
+    .elec-report-format-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .elec-upload-list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;max-height:140px;overflow:auto}
+    .elec-upload-list li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid #334155;border-radius:10px;background:#0d1630;font-size:10px;font-weight:800;color:#cbd5e1}
+    .elec-upload-list .tag{flex-shrink:0;font-size:9px;padding:2px 6px;border-radius:6px;background:#1e3a5f;color:#93c5fd}
+.search-label{display:block;color:#93a4c7;font-size:10px;font-weight:900;margin-bottom:6px}
+    .search-row-dni{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .search-row-dni .btn{padding:12px 14px;white-space:nowrap;font-size:11px}
+    .search-hint{display:block;margin-top:6px;color:#64748b;font-size:9px;font-weight:800;line-height:1.35}
+    @media(max-width:1180px){.content{grid-template-columns:320px 1fr}.right-panel{display:none}}
+    @media(max-width:850px){body{overflow:auto}.app{display:block}.main{height:auto}.content{display:block;height:auto;padding:12px}.card{margin-bottom:14px}.map-shell{height:560px}.top-actions{display:none}}
+  
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><img class="logo-img" src="data:image/png;base64,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" alt="Logo FISE"><div class="brand-sub">SAT CONTROL - ELECTRICIDAD AL TOQUE</div></div>
+    <nav class="nav">
+      <button class="active"><span class="ico">▣</span>SatControl</button>
+      <div class="subnav">
+        <div class="active">GIS Electricidad al Toque</div>
+      </div>
+    </nav>
+    <div class="bottom"><button><span class="ico">👤</span>Ver perfil</button><button class="logout"><span class="ico">⎋</span>Cerrar sesión</button></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-actions" style="justify-content:flex-start">
+        <button class="toggle-btn" id="toggleSidebarBtn" title="Ocultar menú lateral">☰</button>
+      </div>
+      <div class="title-block">
+        <h1>SAT CONTROL - ELECTRICIDAD AL TOQUE</h1>
+      </div>
+      <div class="top-actions metrics">
+        <div class="pill-top">Activos visibles: <b id="visibleCounter">0</b></div>
+        <div class="pill-top">Total inventario: <b>200</b></div>
+      </div>
+    </header>
+
+    <section class="content">
+      <aside class="card left-panel">
+        <div class="panel-head"><h2>Control del inventario</h2><div class="panel-actions"><button class="btn" id="refreshBtn">Regenerar puntos</button><button class="toggle-btn" id="hideLeftPanelBtn" title="Ocultar panel izquierdo">‹</button></div></div>
+        <div class="search" style="padding-top:0">
+          <label class="search-label" for="dniSuministroSearch">Búsqueda por DNI / Suministro</label>
+          <div class="search-row-dni">
+            <input id="dniSuministroSearch" inputmode="numeric" maxlength="20" placeholder="DNI (8 dígitos) o N° suministro" aria-label="DNI o suministro" />
+            <button type="button" class="btn" id="dniSuministroSearchBtn">Buscar</button>
+          </div>
+          <small class="search-hint">Ejemplo: 74200913 · 592644 · SUM-592644</small>
+        </div>
+        <div class="search" style="padding-top:0">
+          <select id="statusFilter">
+            <option value="all">Todos los estados</option>
+            <option value="operativo">Instalación</option>
+            <option value="observado">Finalizado</option>
+            <option value="inactivo">Liquidado</option>
+          </select>
+        </div>
+        <div class="stack">
+          <div class="mini">
+            <h3>Estado del trámite</h3>
+            <div class="kpis">
+              <div class="kpi"><span>Total</span><b>5,395</b></div>
+              <div class="kpi"><span>Instalación</span><b id="operativosKpi">1,734</b></div>
+              <div class="kpi"><span>Finalizado</span><b id="observadosKpi">2,049</b></div>
+              <div class="kpi"><span>Liquidado</span><b id="inactivosKpi">1,612</b></div>
+            </div>
+          </div>
+          <div hidden>
+            <p id="selectionHint"></p>
+            <button class="btn dark" id="zoomPeruBtn" type="button">Ver Perú completo</button>
+            <button class="btn dark" id="randomSelectBtn" type="button">Seleccionar uno</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="map-wrap">
+        <div class="map-shell card">
+          <div id="map"></div>
+          <button class="map-side-toggle left" id="showLeftPanelBtn" title="Mostrar panel izquierdo">›</button>
+          <button class="map-side-toggle right" id="showRightPanelBtn" title="Mostrar panel derecho">‹</button>
+          <div class="gis-toolbar">
+            <details class="elec-menu" id="mapasDetails">
+              <summary class="ge-action-btn" id="mapasBtn" title="Seleccionar mapa base">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 7h14"></path>
+                  <path d="M5 12h14"></path>
+                  <path d="M5 17h14"></path>
+                  <circle class="fill-current" cx="8" cy="7" r="1.6"></circle>
+                  <circle class="fill-current" cx="16" cy="12" r="1.6"></circle>
+                  <circle class="fill-current" cx="11" cy="17" r="1.6"></circle>
+                </svg>
+                <span>Mapas</span>
+              </summary>
+              <div class="floating-panel elec-maps-panel" id="mapsPanel">
+                <div class="floating-title">Mapas</div>
+                <button class="layer-option elec-map-option active" id="baseOsmBtn" type="button">OSM</button>
+                <button class="layer-option elec-map-option" id="baseSatBtn" type="button">Topográfico</button>
+                <div class="hint">Seleccione el estilo de mapa base para visualizar la información territorial.</div>
+              </div>
+            </details>
+            <details class="elec-menu" id="layersDetails">
+              <summary class="ge-action-btn" id="toggleLayersBtn" title="Seleccionar capas superpuestas">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4l8 4-8 4-8-4 8-4z"></path>
+                  <path d="M4 12l8 4 8-4"></path>
+                  <path d="M4 16l8 4 8-4"></path>
+                </svg>
+                <span>Capas</span>
+              </summary>
+              <div class="floating-panel" id="inventoryPanel">
+                <div class="floating-title">Capas</div>
+                <label class="layer-option"><input type="checkbox" id="togglePanelPoints" checked> Capa de beneficiarios</label>
+                <div class="hint">Muestra los beneficiarios de Electricidad al Toque según el estado de su trámite.</div>
+                <div class="legend">
+                  <span class="badge b-warn"><span class="status-dot sd-warn"></span> Instalación</span>
+                  <span class="badge b-ok"><span class="status-dot sd-ok"></span> Finalizado</span>
+                  <span class="badge" style="background:#3b82f622;color:#bfdbfe"><span class="status-dot" style="background:#3b82f6"></span> Liquidado</span>
+                </div>
+              </div>
+            </details>
+            <details class="elec-menu" id="thematicDetails">
+              <summary class="ge-action-btn" title="Abrir mapas temáticos">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18h16"></path><path d="M7 15l3-7 3 5 2-4 2 6"></path></svg>
+                <span>Temáticos</span>
+              </summary>
+              <div class="floating-panel" id="thematicPanel">
+                <div class="floating-title">Mapas temáticos</div>
+                <label class="layer-option"><input type="checkbox" id="showDisbursementHeat"> Mapa de calor de montos desembolsados por zona</label>
+                <div class="hint">La intensidad representa el monto acumulado desembolsado en cada zona.</div>
+                <div class="legend"><span class="badge b-ok">Bajo</span><span class="badge b-warn">Medio</span><span class="badge b-off">Alto</span></div>
+              </div>
+            </details>
+            <button class="ge-btn active" id="prepareMapSelectionBtn" title="Limpiar panel derecho y preparar selección en mapa" aria-label="Limpiar panel derecho y preparar selección en mapa">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2V6z"></path>
+                <path d="M9 4v14"></path>
+                <path d="M15 6v14"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="info-chip" id="mapInfo">Visualización de 200 beneficiarios de Electricidad al Toque distribuidos en tierra firme del Perú continental.</div>
+        </div>
+      </section>
+
+      <aside class="card right-panel">
+        <div class="title-box">
+          <button class="toggle-btn right-hide-btn" id="hideRightPanelBtn" title="Ocultar panel derecho">›</button>
+          <h2 id="panelTitle">Ficha del beneficiario Electricidad al Toque</h2>
+          <p id="panelSubtitle">Selecciona un punto del mapa para ver el detalle completo</p>
+        </div>
+        
+        <div class="mini">
+            <div class="utils-grid elec-internal-utils" style="display:none">
+            <button class="util-btn icon-only active" id="utilSelect" title="Seleccionar"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l10 10-4 1-2 5-2-6-5-2z"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilCircle" title="Selección circular"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilFit" title="Ver Perú"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilRandom" title="Aleatorio"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h4l6 10h4"/><path d="M17 7h2v2"/><path d="M19 7l-3 3"/><path d="M5 17h4l2-3"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilPin" title="Nueva tachuela / registrar punto"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.8 6-11a6 6 0 10-12 0c0 5.2 6 11 6 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span></button>
+            <button class="util-btn icon-only" id="utilAnexo4" title="Validar Anexo 4 vs FICEF"><span class="util-ico"><svg class="util-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/><path d="M17 11l2 2 3-4"/></svg></span></button>
+            </div>
+            <div class="circle-hint" id="toolHint">Modo actual: selección individual de beneficiarios.</div>
+        </div>
+        
+        <div class="mini">
+          <div class="evidence-head"><h3 id="detailsTitle">Información del beneficiario seleccionado</h3><span class="selection-badge" id="selectionModeBadge">Individual</span></div>
+          <div class="details-grid" id="panelDetails"></div>
+        </div>
+        <div class="mini" id="elecExpedienteCard">
+          <div class="evidence-head">
+            <div>
+              <h3>Expedientes digitales</h3>
+              <small>Sedes manuales · SEAL</small>
+            </div>
+          </div>
+          <p class="elec-report-note">Carga de expedientes digitales (PDF/Fotos) para sedes registradas manualmente fuera del flujo automático.</p>
+          <div class="elec-report-meta" id="elecExpedienteMeta">Disponible para sedes manuales. Puede vincular un beneficiario del mapa o registrar uno nuevo.</div>
+          <button type="button" class="btn elec-report-btn" id="elecExpedienteOpenBtn">Cargar expediente digital</button>
+        </div>
+        <div class="mini">
+          <div class="evidence-head"><div><h3>Registro fotográfico · Evidencia</h3><small id="evidenceSubtitle">Cinco vistas del expediente</small></div><span class="badge b-ok" id="evidenceCountBadge">1/5</span></div>
+          <div id="evidenceSingleWrap" class="photo-wrap">
+            <button class="evidence-carousel-btn prev" type="button" onclick="moveElectricEvidence(-1)" aria-label="Evidencia anterior">‹</button>
+            <img id="panelPhoto" alt="Evidencia del beneficiario Electricidad al Toque" />
+            <button class="evidence-carousel-btn next" type="button" onclick="moveElectricEvidence(1)" aria-label="Evidencia siguiente">›</button>
+            <div class="photo-caption" id="panelPhotoCaption">Sin evidencia cargada aún.</div>
+            <div class="evidence-carousel-dots" id="evidenceCarouselDots"></div>
+          </div>
+          <a class="evidence-report-link" href="#" onclick="return false">DI ENLACE ACTA = REPORTE - ELECTRICIDAD AL TOQUE</a>
+          <div id="evidenceGallery" class="thumb-grid" style="display:none"></div>
+        </div>
+        <div class="mini" id="summaryCard" style="display:none">
+          <h3>Información estadística de los seleccionados</h3>
+          <div id="summaryContent"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div class="pin-modal" id="pinModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Registro con tachuela</span>
+        <h2>Nuevo punto Electricidad al Toque</h2>
+        <p>Selecciona un punto en el mapa para capturar la latitud y longitud. Luego completa la ficha técnica y envíala a un usuario para supervisión.</p>
+      </div>
+      <button class="pin-close" id="closePinModalBtn">×</button>
+    </div>
+    <div class="pin-grid">
+      <div class="pin-field"><label>Latitud</label><input id="pinLat" readonly /></div>
+      <div class="pin-field"><label>Longitud</label><input id="pinLng" readonly /></div>
+      <div class="pin-field"><label>Tecnología</label><select id="pinTechnology"><option>Monocristalino</option><option>Policristalino</option><option selected>Bifacial</option></select></div>
+      <div class="pin-field"><label>Capacidad</label><input id="pinCapacity" value="550 Wp" /></div>
+      <div class="pin-field"><label>Inversor</label><input id="pinInverter" value="3 kVA" /></div>
+      <div class="pin-field"><label>Batería</label><input id="pinBattery" value="5 x 100 Ah" /></div>
+      <div class="pin-field"><label>Instalación</label><input id="pinInstallation" value="12/12/2025" /></div>
+      <div class="pin-field"><label>Último mantenimiento</label><input id="pinMaintenance" value="10/06/2026" /></div>
+      <div class="pin-field"><label>Sincronización</label><select id="pinSync"><option selected>Sincronizado</option><option>Pendiente de sincronización</option></select></div>
+      <div class="pin-field"><label>OPEX</label><select id="pinOpex"><option selected>Pago OPEX habilitado</option><option>Pago OPEX bloqueado</option></select></div>
+      <div class="pin-field full"><label>Observación</label><textarea id="pinObservation">Equipo operativo sin incidencias críticas.</textarea></div>
+      <div class="pin-field"><label>Enviar a usuario</label><select id="pinSupervisor"><option value="">Seleccionar usuario supervisor</option><option>Carolina Jara</option><option>Oliver Gonzales</option><option>Vitor</option><option>Supervisor Regional Madre de Dios</option></select></div>
+      <div class="pin-field"><label>Estado de envío</label><input id="pinSendStatus" value="Pendiente de envío" readonly /></div>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="pinStatusMsg">Selecciona un punto en el mapa con la herramienta de tachuela.</div>
+      <div class="pin-btns"><button class="pin-btn" id="savePinDraftBtn">Guardar borrador</button><button class="pin-btn success" id="sendPinBtn">Enviar a supervisión</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="dgerModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Excel DGER</span>
+        <h2>Procesamiento de resoluciones DGER</h2>
+        <p>Como usuario, quiero cargar al sistema los archivos Excel de resoluciones DGER para automatizar el cálculo de morosidad y cargos RER.</p>
+      </div>
+      <button class="pin-close" id="closeDgerModalBtn">×</button>
+    </div>
+    <input type="file" id="dgerExcelInput" accept=".xlsx,.xls,.csv" style="display:none" />
+    <div class="mini" style="margin-bottom:14px">
+      <div class="evidence-head"><h3>Importación de datos</h3><span class="selection-badge">Excel</span></div>
+      <div class="pin-grid" style="margin-top:10px">
+        <div class="pin-field full">
+          <label>Archivo Excel de resoluciones DGER</label>
+          <input id="dgerFileName" value="Ningún archivo seleccionado" readonly />
+        </div>
+      </div>
+      <div class="pin-btns" style="margin-top:12px">
+        <button class="pin-btn primary" id="selectDgerFileBtn">Seleccionar Excel</button>
+        <button class="pin-btn success" id="processDgerBtn">Procesar archivo</button>
+      </div>
+    </div>
+    <div class="mini">
+      <div class="evidence-head"><h3>Resultados del procesamiento</h3><span class="selection-badge">Automático</span></div>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-kpi"><span>Morosidad</span><b id="dgerMorosidad">S/ 0</b></div>
+        <div class="summary-kpi"><span>Cargo RER</span><b id="dgerRer">S/ 0</b></div>
+        <div class="summary-kpi"><span>Registros</span><b id="dgerRows">0</b></div>
+      </div>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="dgerStatusMsg">Selecciona un archivo Excel para iniciar el procesamiento.</div>
+      <div class="pin-btns"><button class="pin-btn" id="closeDgerFooterBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="anexo4Modal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">Anexo 4 · FICEF</span>
+        <h2>Liquidación y validación del Anexo 4</h2>
+        <p>Cargue el Anexo 4 y revise el cruce simulado de suministros, datos técnicos, coordenadas y montos antes de generar el sustento de reembolso.</p>
+      </div>
+      <button class="pin-close" id="closeAnexo4ModalBtn">×</button>
+    </div>
+    <input type="file" id="anexo4ExcelInput" accept=".xlsx,.xls,.csv" style="display:none" />
+    <div class="mini" style="margin-bottom:14px">
+      <div class="evidence-head"><h3>Carga del Excel Anexo 4</h3><span class="selection-badge">SEAL Arequipa</span></div>
+      <div class="pin-grid" style="margin-top:10px">
+        <div class="pin-field full">
+          <label>Archivo Excel Anexo 4</label>
+          <input id="anexo4FileName" value="Ningún archivo seleccionado" readonly />
+        </div>
+      </div>
+      <div class="pin-btns" style="margin-top:12px">
+        <button class="pin-btn primary" id="selectAnexo4FileBtn">Seleccionar Excel</button>
+        <button class="pin-btn success" id="validateAnexo4Btn">Validar contra FICEF</button>
+      </div>
+      <div class="tiny-note" id="anexo4StatusMsg" style="margin-top:10px">Base de referencia: Sociedad Eléctrica del Sur Oeste S.A. - SEAL · Arequipa · FICEF.</div>
+    </div>
+    <div class="mini">
+      <div class="evidence-head"><h3>Resultados de validación</h3><span class="selection-badge">Automático</span></div>
+      <div class="summary-grid" style="margin-top:12px">
+        <div class="summary-kpi"><span>Registros</span><b id="anexo4RowsKpi">0</b></div>
+        <div class="summary-kpi"><span>Coinciden</span><b id="anexo4OkKpi">0</b></div>
+        <div class="summary-kpi"><span>Observados</span><b id="anexo4ObsKpi">0</b></div>
+        <div class="summary-kpi"><span>Diferencia monetaria</span><b id="anexo4DiffKpi">S/ 0.00</b></div>
+      </div>
+      <div class="summary-total" id="anexo4SummaryBox">
+        <div class="summary-total-row"><span>Empresa</span><b>SEAL Arequipa</b></div>
+        <div class="summary-total-row"><span>Reglas de validación</span><b>Suministro · Beneficiario · Datos técnicos · Coordenadas · Total</b></div>
+        <div class="summary-total-row"><span>Estado</span><b>Pendiente de carga</b></div>
+      </div>
+    </div>
+    <div class="mini" style="margin-top:14px">
+      <div class="evidence-head"><h3>Reporte de inconsistencias</h3><span class="selection-badge">Detalle</span></div>
+      <div id="anexo4DetailTable" style="max-height:240px;overflow:auto;margin-top:10px;color:#cbd5e1;font-size:11px;font-weight:800">Carga el Excel para visualizar la validación automática.</div>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status">Maqueta demostrativa: el resultado permite revisar observaciones antes del reembolso.</div>
+      <div class="pin-btns"><button class="pin-btn" id="closeAnexo4FooterBtn">Cerrar</button><button class="pin-btn success" id="generateAnexo4ReportBtn">Generar reporte de liquidación</button></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="pin-modal" id="elecReportModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">SATCONTROL</span>
+        <h2>Generar reporte Electricidad al Toque</h2>
+        <p>Reporte operativo de conexiones, compensaciones y ficha técnica. Elija el formato de descarga.</p>
+      </div>
+      <button class="pin-close" id="closeElecReportModalBtn">×</button>
+    </div>
+    <div class="mini" style="margin-bottom:14px">
+      <div class="summary-grid">
+        <div class="summary-kpi"><span>Modo</span><b id="elecReportModalMode">Individual</b></div>
+        <div class="summary-kpi"><span>Registros</span><b id="elecReportModalCount">0</b></div>
+      </div>
+      <div class="summary-total" style="margin-top:12px">
+        <div class="summary-total-row"><span>Referencia</span><b id="elecReportModalRef">—</b></div>
+        <div class="summary-total-row"><span>Total conexión (S/)</span><b id="elecReportModalConexion">S/ 0</b></div>
+        <div class="summary-total-row"><span>Total compensación (S/)</span><b id="elecReportModalTotal">S/ 0</b></div>
+        <div class="summary-total-row"><span>Potencia conectada (kW)</span><b id="elecReportModalKw">0</b></div>
+      </div>
+    </div>
+    <div class="elec-report-format-grid">
+      <button type="button" class="pin-btn success" id="elecReportXlsxBtn">Descargar .xlsx</button>
+      <button type="button" class="pin-btn" id="elecReportPdfBtn">Descargar .pdf</button>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="elecReportModalStatus">El reporte incluirá ficha técnica, ubicación, tipo de conexión y montos de compensación.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pin-modal" id="elecExpedienteModal">
+  <div class="pin-modal-card">
+    <div class="pin-modal-head">
+      <div>
+        <span class="tiny-chip">SATCONTROL · Sedes manuales</span>
+        <h2>Carga de expedientes digitales</h2>
+        <p>Adjunte el PDF del expediente y las fotografías de soporte para sedes registradas manualmente (fachada, medidor, instalación).</p>
+      </div>
+      <button class="pin-close" id="closeElecExpedienteModalBtn">×</button>
+    </div>
+    <input type="file" id="elecExpedientePdfInput" accept=".pdf,application/pdf" style="display:none" />
+    <input type="file" id="elecExpedientePhotosInput" accept=".jpg,.jpeg,.png,.webp,image/*" multiple style="display:none" />
+    <div class="mini" style="margin-bottom:14px">
+      <div class="evidence-head"><h3>Identificación de la sede</h3><span class="selection-badge">Manual</span></div>
+      <div class="pin-grid" style="margin-top:10px">
+        <div class="pin-field">
+          <label>Código beneficiario / sede</label>
+          <input id="elecExpedienteCode" placeholder="Ej. SE1147" />
+        </div>
+        <div class="pin-field">
+          <label>Distrito / localidad</label>
+          <input id="elecExpedienteDistrict" placeholder="Ej. Huaynacotas" />
+        </div>
+        <div class="pin-field full">
+          <label>Tipo de sede manual</label>
+          <select id="elecExpedienteTipo">
+            <option value="comunidad">Comunidad alejada</option>
+            <option value="institucion">Institución pública</option>
+            <option value="vivienda">Vivienda rural</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mini" style="margin-bottom:14px">
+      <div class="evidence-head"><h3>Documentación digital</h3><span class="selection-badge">PDF / Fotos</span></div>
+      <div class="pin-btns" style="margin-top:12px">
+        <button type="button" class="pin-btn primary" id="selectElecExpedientePdfBtn">Seleccionar PDF</button>
+        <button type="button" class="pin-btn primary" id="selectElecExpedientePhotosBtn">Seleccionar fotos</button>
+      </div>
+      <ul class="elec-upload-list" id="elecExpedienteFileList">
+        <li><span>Sin archivos cargados</span><span class="tag">—</span></li>
+      </ul>
+    </div>
+    <div class="pin-actions">
+      <div class="pin-status" id="elecExpedienteStatusMsg">Complete la identificación de la sede y adjunte al menos el PDF del expediente.</div>
+      <div class="pin-btns">
+        <button type="button" class="pin-btn" id="closeElecExpedienteFooterBtn">Cerrar</button>
+        <button type="button" class="pin-btn success" id="submitElecExpedienteBtn">Registrar expediente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+(() => {
+  const TOTAL_PANELS = 200;
+  let anexo4Rows = [];
+  let anexo4LastFile = '';
+  let elecExpedientePdfFile = null;
+  let elecExpedientePhotos = [];
+  const boundsPeru = {minLat:-18.35,maxLat:-0.1,minLng:-81.4,maxLng:-68.55};
+  // Polígono simplificado del Perú continental (lng, lat)
+  const peruPoly = [
+    [-80.25,-3.52],[-80.60,-4.10],[-80.82,-4.95],[-80.95,-5.85],[-80.88,-6.80],[-80.72,-7.75],[-80.42,-8.85],[-79.98,-9.95],[-79.48,-11.05],[-78.98,-12.15],[-78.28,-13.20],[-77.45,-14.25],[-76.55,-15.20],[-75.55,-16.05],[-74.45,-16.85],[-73.20,-17.55],[-71.95,-17.92],[-70.70,-18.12],[-69.70,-17.60],[-69.10,-16.25],[-68.95,-14.95],[-68.98,-13.55],[-69.15,-12.10],[-69.35,-10.65],[-69.65,-9.25],[-70.08,-7.85],[-70.58,-6.55],[-71.12,-5.55],[-71.85,-4.60],[-72.72,-3.78],[-73.75,-3.05],[-74.90,-2.50],[-76.10,-2.20],[-77.15,-2.32],[-78.15,-2.65],[-79.10,-3.05],[-80.00,-3.36],[-80.25,-3.52]
+  ];
+  const REGION_SEEDS = [
+    [-3.75,-80.45,0.70,0.65],[-5.20,-80.15,0.85,0.80],[-6.75,-79.85,0.95,0.85],[-8.05,-78.85,0.95,0.85],
+    [-9.55,-77.55,1.10,0.95],[-11.15,-76.55,1.15,1.00],[-12.35,-75.20,1.05,0.95],[-13.75,-74.55,1.10,1.05],
+    [-15.05,-73.85,1.10,0.95],[-16.35,-72.25,1.00,0.90],[-17.05,-70.75,0.90,0.80],[-6.05,-76.85,1.20,1.05],
+    [-4.55,-74.95,1.25,1.20],[-8.55,-74.55,1.35,1.10],[-9.95,-75.95,1.10,0.95],[-10.75,-74.75,1.05,0.95],
+    [-12.95,-72.65,1.15,1.05],[-13.75,-71.95,1.05,0.95],[-15.75,-69.95,0.95,0.85],[-12.55,-69.15,1.05,0.90]
+  ];
+  const DEPARTMENTS = [
+    ['Tumbes','Zarumilla','Matapalo'],['Piura','Piura','Las Lomas'],['Lambayeque','Chiclayo','Pimentel'],['La Libertad','Trujillo','Poroto'],
+    ['Ancash','Huaraz','Taricá'],['Lima','Huaral','Aucallama'],['Ica','Ica','Subtanjalla'],['Arequipa','Camaná','Nicolás de Piérola'],
+    ['Moquegua','Mariscal Nieto','Samegua'],['Tacna','Tacna','Calana'],['Cajamarca','Cajamarca','Baños del Inca'],['Amazonas','Chachapoyas','Huancas'],
+    ['San Martín','Moyobamba','Yantaló'],['Loreto','Maynas','Belén'],['Ucayali','Coronel Portillo','Yarinacocha'],['Huánuco','Huánuco','Santa María del Valle'],
+    ['Pasco','Pasco','Yanacancha'],['Junín','Huancayo','El Tambo'],['Huancavelica','Huancavelica','Ascensión'],['Ayacucho','Huamanga','Jesús Nazareno'],
+    ['Apurímac','Abancay','Tamburco'],['Cusco','Cusco','San Sebastián'],['Puno','Puno','Paucarcolla'],['Madre de Dios','Tambopata','Laberinto']
+  ];
+  const panelType = ['Monocristalino','Policristalino','Bifacial'];
+  const capacities = [330,350,400,450,550];
+  const statuses = ['operativo','observado','inactivo'];
+  const procedureStatusLabels = ['Instalación','Finalizado','Liquidado'];
+
+  const map = L.map('map', {preferCanvas:true, zoomControl:false, attributionControl:true}).setView([-9.2,-75.05], 5);
+  window.map = map;
+  window.leafletMap = map;
+  function resizeMapAfterLayout(){
+    [80, 280, 520].forEach(ms => setTimeout(() => {
+      map.invalidateSize({ animate: false });
+      if(ms >= 280) fitPeruOverview(true);
+    }, ms));
+  }
+  window.resizeMapAfterLayout = resizeMapAfterLayout;
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  const baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+  const baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom:17, attribution:'© OpenTopoMap'});
+  const peruOutline = L.polygon(peruPoly.map(([lng,lat])=>[lat,lng]), {color:'#38bdf8',weight:1.2,opacity:.42,dashArray:'8 6',fillColor:'#38bdf8',fillOpacity:0.025}).addTo(map);
+  function fitPeruOverview(animate = false){
+    map.fitBounds(peruOutline.getBounds().pad(0.18), {
+      paddingTopLeft: [42, 42],
+      paddingBottomRight: [42, 42],
+      maxZoom: 5,
+      animate
+    });
+  }
+
+  const latitudes = new Float32Array(TOTAL_PANELS);
+  const longitudes = new Float32Array(TOTAL_PANELS);
+  const statusCodes = new Uint8Array(TOTAL_PANELS);
+  const deptCodes = new Uint8Array(TOTAL_PANELS);
+  const visibleFlags = new Uint8Array(TOTAL_PANELS);
+
+  let selectedIndex = 0;
+  let overlayVisible = true;
+  let showState = {operativo:true, observado:true, inactivo:true};
+  let drawRequested = false;
+  let visibleCount = 0;
+  let mapTool = 'select';
+  let selectionCircle = null;
+  let selectionCenterMarker = null;
+  let selectionCenterLatLng = null;
+  let circleSelectionRadius = 65000;
+  let circleDraftActive = false;
+  let multiSelection = [];
+  let draftPinMarker = null;
+  let draftPinLatLng = null;
+  let beneficiariesVisible = false;
+  let noElectricityHomesVisible = false;
+  let concessionsVisible = false;
+  const beneficiaryData = [];
+  const noElectricityHomesData = [];
+  const concessionAreas = [];
+  const beneficiaryLayer = L.layerGroup().addTo(map);
+  const disbursementHeatLayer = L.layerGroup().addTo(map);
+  let disbursementHeatVisible = false;
+  const noElectricityHomesLayer = L.layerGroup().addTo(map);
+  const concessionsLayer = L.layerGroup().addTo(map);
+
+  function qs(id){ return document.getElementById(id); }
+
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  }
+
+  function pointInPolygon(lng, lat, poly){
+    let inside = false;
+    for(let i=0, j=poly.length-1; i<poly.length; j=i++){
+      const xi = poly[i][0], yi = poly[i][1];
+      const xj = poly[j][0], yj = poly[j][1];
+      const intersect = ((yi > lat) !== (yj > lat)) &&
+        (lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi);
+      if(intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function randomOffset(rand, spread){
+    return (((rand() + rand() + rand()) / 3) - 0.5) * spread;
+  }
+  function randomPointInPeru(rand){
+    for(let attempts = 0; attempts < 5000; attempts++){
+      const seed = REGION_SEEDS[Math.floor(rand() * REGION_SEEDS.length)];
+      const lat = seed[0] + randomOffset(rand, seed[2]);
+      const lng = seed[1] + randomOffset(rand, seed[3]);
+      if(pointInPolygon(lng, lat, peruPoly)) return [lat, lng];
+    }
+    // Fallback más estricto para evitar puntos en el mar
+    for(let attempts = 0; attempts < 5000; attempts++){
+      const lat = boundsPeru.minLat + rand() * (boundsPeru.maxLat - boundsPeru.minLat);
+      const lng = boundsPeru.minLng + rand() * (boundsPeru.maxLng - boundsPeru.minLng);
+      if(pointInPolygon(lng, lat, peruPoly) && lng > -80.95) return [lat, lng];
+    }
+    return [-12.05, -76.95];
+  }
+
+  function generatePanelPoints(seed = 20260526){
+    const rand = mulberry32(seed);
+    let op=0, ob=0, ina=0;
+    for(let i=0; i<TOTAL_PANELS; i++){
+      const [lat,lng] = randomPointInPeru(rand);
+      latitudes[i] = lat;
+      longitudes[i] = lng;
+      const r = rand();
+      const sc = r < 0.83 ? 0 : (r < 0.95 ? 1 : 2);
+      statusCodes[i] = sc;
+      deptCodes[i] = Math.floor(rand() * DEPARTMENTS.length);
+      visibleFlags[i] = 1;
+      if(sc===0) op++; else if(sc===1) ob++; else ina++;
+    }
+    qs('operativosKpi').textContent = '1,734';
+    qs('observadosKpi').textContent = '2,049';
+    qs('inactivosKpi').textContent = '1,612';
+  }
+
+  class SolarCanvasLayer extends L.Layer {
+    constructor(){ super(); this._canvas = null; this._selected = null; }
+    onAdd(map){
+      this._map = map;
+      this._canvas = L.DomUtil.create('canvas', 'leaflet-zoom-animated');
+      this._canvas.style.position = 'absolute';
+      this._ctx = this._canvas.getContext('2d');
+      map.getPanes().overlayPane.appendChild(this._canvas);
+      map.on('moveend zoomend resize', this._reset, this);
+      map.on('click', this._handleClick, this);
+      this._reset();
+    }
+    onRemove(map){
+      L.DomUtil.remove(this._canvas);
+      map.off('moveend zoomend resize', this._reset, this);
+      map.off('click', this._handleClick, this);
+    }
+    setSelected(index){ this._selected = index; this.redraw(); }
+    redraw(){ if(!this._canvas) return; if(drawRequested) return; drawRequested = true; requestAnimationFrame(()=>{ drawRequested = false; this._draw(); }); }
+    _reset(){
+      const size = this._map.getSize();
+      this._canvas.width = size.x;
+      this._canvas.height = size.y;
+      const pos = this._map.containerPointToLayerPoint([0,0]);
+      L.DomUtil.setPosition(this._canvas, pos);
+      this.redraw();
+    }
+    _drawPanelIcon(ctx, x, y, color, selected){
+      const zoom = this._map ? this._map.getZoom() : 6;
+      const zoomScale = Math.max(1.25, 1 + (zoom - 5.8) * 0.24);
+      const scale = (selected ? 1.65 : 0.86) * zoomScale;
+      const w = 10 * scale, h = 7 * scale;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.shadowColor = selected ? 'rgba(255,255,255,.75)' : 'rgba(15,23,42,.45)';
+      ctx.shadowBlur = selected ? 14 : 6;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = selected ? '#ffffff' : 'rgba(255,255,255,.95)';
+      ctx.lineWidth = selected ? 2.2 : 1.25;
+      ctx.beginPath();
+      ctx.roundRect(-w/2, -h/2, w, h, 1.8 * scale);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,.72)';
+      ctx.lineWidth = .9 * zoomScale;
+      ctx.beginPath();
+      ctx.moveTo(-w/6, -h/2); ctx.lineTo(-w/6, h/2);
+      ctx.moveTo(w/6, -h/2); ctx.lineTo(w/6, h/2);
+      ctx.moveTo(-w/2, 0); ctx.lineTo(w/2, 0);
+      ctx.stroke();
+      ctx.strokeStyle = selected ? '#ffffff' : 'rgba(15,23,42,.85)';
+      ctx.lineWidth = 1.25 * zoomScale;
+      ctx.beginPath();
+      ctx.moveTo(0, h/2); ctx.lineTo(0, h/2 + 4.2*scale);
+      ctx.moveTo(-3*scale, h/2 + 4.2*scale); ctx.lineTo(3*scale, h/2 + 4.2*scale);
+      ctx.stroke();
+      if(selected){
+        ctx.strokeStyle = 'rgba(255,255,255,.95)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, Math.max(w,h)*0.9, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    _draw(){
+      const ctx = this._ctx;
+      const size = this._map.getSize();
+      ctx.clearRect(0, 0, size.x, size.y);
+      if(!overlayVisible) { visibleCount = 0; qs('visibleCounter').textContent = '0'; return; }
+      const bounds = this._map.getBounds();
+      const showOp = showState.operativo, showOb = showState.observado, showIna = showState.inactivo;
+      visibleCount = 0;
+      for(let i=0; i<TOTAL_PANELS; i++){
+        const lat = latitudes[i], lng = longitudes[i], sc = statusCodes[i];
+        const statusName = statuses[sc];
+        if((statusName==='operativo' && !showOp) || (statusName==='observado' && !showOb) || (statusName==='inactivo' && !showIna)) { visibleFlags[i]=0; continue; }
+        if(!bounds.contains([lat,lng])) { visibleFlags[i]=0; continue; }
+        visibleFlags[i] = 1; visibleCount++;
+        const p = this._map.latLngToContainerPoint([lat,lng]);
+        const color = sc===0 ? '#f59e0b' : (sc===1 ? '#22c55e' : '#3b82f6');
+        if(this._map.getZoom() <= 6.2){
+          ctx.save();
+          ctx.globalAlpha = i === this._selected ? 0.28 : 0.14;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, i === this._selected ? 8 : 4.2, 0, Math.PI*2);
+          ctx.fill();
+          ctx.restore();
+        }
+        this._drawPanelIcon(ctx, p.x, p.y, color, i === this._selected);
+      }
+      qs('visibleCounter').textContent = visibleCount.toLocaleString('es-PE');
+    }
+    _handleClick(e){
+      if(!overlayVisible) return;
+      if(mapTool === 'circle'){
+        handleCircleToolClick(e.latlng);
+        return;
+      }
+      if(mapTool === 'pin'){
+        openPinModal(e.latlng);
+        return;
+      }
+      const clickPt = this._map.latLngToContainerPoint(e.latlng);
+      let best = -1, bestDist = 10;
+      const bounds = this._map.getBounds();
+      const showOp = showState.operativo, showOb = showState.observado, showIna = showState.inactivo;
+      for(let i=0; i<TOTAL_PANELS; i++){
+        const lat = latitudes[i], lng = longitudes[i], sc = statusCodes[i];
+        const statusName = statuses[sc];
+        if((statusName==='operativo' && !showOp) || (statusName==='observado' && !showOb) || (statusName==='inactivo' && !showIna)) continue;
+        if(!bounds.contains([lat,lng])) continue;
+        const p = this._map.latLngToContainerPoint([lat,lng]);
+        const dx = p.x - clickPt.x, dy = p.y - clickPt.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < bestDist){ bestDist = dist; best = i; }
+      }
+      if(best >= 0){ selectPanel(best, true); }
+    }
+  }
+
+  const solarLayer = new SolarCanvasLayer();
+  map.addLayer(solarLayer);
+  map.on('mousemove', e => updateCircleDraft(e.latlng));
+  map.on('dblclick', e => {
+    if(mapTool !== 'circle' || !circleDraftActive || !selectionCenterLatLng) return;
+    L.DomEvent.stop(e);
+    circleSelectionRadius = Math.max(1000, map.distance(selectionCenterLatLng, e.latlng));
+    drawCircularSelection(selectionCenterLatLng);
+  });
+
+  function statusLabel(sc){ return procedureStatusLabels[sc] || procedureStatusLabels[0]; }
+  function statusBadge(sc){ return sc===0 ? '<span class="badge b-warn">Instalación</span>' : sc===1 ? '<span class="badge b-ok">Finalizado</span>' : '<span class="badge b-off">Liquidado</span>'; }
+  function panelCode(i){ return 'EAT-' + String(i+1).padStart(6,'0'); }
+  function installDate(i){ const y = 2021 + (i % 5); const m = String((i % 12) + 1).padStart(2,'0'); const d = String((i % 28) + 1).padStart(2,'0'); return `${d}/${m}/${y}`; }
+  function maintenanceDate(i){ const y = 2026; const m = String(((i*7)%12)+1).padStart(2,'0'); const d = String(((i*11)%28)+1).padStart(2,'0'); return `${d}/${m}/${y}`; }
+  function formatCoord(v){ return Number(v).toFixed(5); }
+  function evidenceImage(panel){
+    const xmlSafe=value=>String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const label = xmlSafe(panel.code);
+    const dept = xmlSafe(panel.department);
+    const status = xmlSafe(panel.statusLabel);
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+        <defs>
+          <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#e0f2fe"/></linearGradient>
+          <linearGradient id="ground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#14532d"/></linearGradient>
+        </defs>
+        <rect width="800" height="450" fill="url(#sky)"/>
+        <circle cx="690" cy="90" r="42" fill="#fde047" opacity=".92"/>
+        <rect y="280" width="800" height="170" fill="url(#ground)"/>
+        <polygon points="200,275 410,230 560,310 345,355" fill="#1e3a8a" stroke="#fff" stroke-width="4"/>
+        <g stroke="#93c5fd" stroke-width="2">
+          <line x1="235" y1="267" x2="380" y2="236"/>
+          <line x1="270" y1="281" x2="414" y2="249"/>
+          <line x1="304" y1="294" x2="448" y2="263"/>
+          <line x1="338" y1="307" x2="481" y2="276"/>
+          <line x1="372" y1="321" x2="514" y2="289"/>
+          <line x1="282" y1="250" x2="321" y2="343"/>
+          <line x1="333" y1="239" x2="372" y2="333"/>
+          <line x1="385" y1="228" x2="424" y2="321"/>
+          <line x1="436" y1="245" x2="475" y2="309"/>
+        </g>
+        <line x1="330" y1="355" x2="320" y2="405" stroke="#334155" stroke-width="8"/>
+        <line x1="455" y1="329" x2="445" y2="400" stroke="#334155" stroke-width="8"/>
+        <rect x="24" y="24" width="300" height="118" rx="18" fill="#0f172acc" stroke="#38bdf8" stroke-width="2"/>
+        <text x="44" y="58" fill="#fff" font-size="26" font-family="Arial" font-weight="700">Evidencia fotográfica</text>
+        <text x="44" y="86" fill="#bae6fd" font-size="22" font-family="Arial">${label}</text>
+        <text x="44" y="112" fill="#e2e8f0" font-size="18" font-family="Arial">${dept} · ${status}</text>
+        <text x="44" y="136" fill="#e2e8f0" font-size="16" font-family="Arial">Registro de campo georreferenciado</text>
+      </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+  const ELECTRIC_EVIDENCE_TITLES = [
+    'Vista de la caja portamedidor',
+    'Medidor',
+    'Interruptor termomagnético',
+    'Vista del predio con la conexión',
+    'DNI del beneficiario'
+  ];
+  const ELECTRIC_EVIDENCE_PHOTOS = [
+    {src:'assets/electricidad/evidencias/caja-portamedidor-v2.jpg',position:'center'},
+    {src:'assets/electricidad/evidencias/medidor-v2.jpg',position:'center'},
+    {src:'assets/electricidad/evidencias/interruptor-termomagnetico-v2.jpg',position:'center'},
+    {src:'assets/electricidad/evidencias/predio-conexion-v2.jpg',position:'center'},
+    {src:'assets/electricidad/evidencias/dni-beneficiario-muestra-v2.jpg',position:'center'}
+  ];
+  let electricEvidenceSlides=[];
+  let electricEvidenceIndex=0;
+  function setElectricEvidenceCarousel(record){
+    const base={department:record.department||record.departamento||'Arequipa',statusLabel:record.statusLabel||'Expediente validado'};
+    electricEvidenceSlides=ELECTRIC_EVIDENCE_TITLES.map((title,index)=>{
+      const photo=ELECTRIC_EVIDENCE_PHOTOS[index];
+      return {title,src:photo.src,position:photo.position,realPhoto:true};
+    });
+    electricEvidenceIndex=0;
+    renderElectricEvidenceCarousel();
+  }
+  function renderElectricEvidenceCarousel(){
+    const slide=electricEvidenceSlides[electricEvidenceIndex];if(!slide)return;
+    qs('panelPhoto').src=slide.src;
+    qs('panelPhoto').alt=slide.title;
+    qs('panelPhoto').style.objectPosition=slide.position||'center';
+    qs('panelPhotoCaption').textContent=slide.title+' · Registro fotográfico del expediente Electricidad al Toque.';
+    qs('evidenceSubtitle').textContent='Caja, medidor, interruptor, predio y DNI';
+    qs('evidenceCountBadge').textContent=(electricEvidenceIndex+1)+'/5';
+    qs('evidenceCarouselDots').innerHTML=electricEvidenceSlides.map((item,index)=>`<button type="button" class="evidence-carousel-dot ${index===electricEvidenceIndex?'active':''}" aria-label="Ver ${item.title}" onclick="showElectricEvidence(${index})"></button>`).join('');
+  }
+  function moveElectricEvidence(step){electricEvidenceIndex=(electricEvidenceIndex+step+electricEvidenceSlides.length)%electricEvidenceSlides.length;renderElectricEvidenceCarousel();}
+  function showElectricEvidence(index){electricEvidenceIndex=index;renderElectricEvidenceCarousel();}
+  window.moveElectricEvidence=moveElectricEvidence;
+  window.showElectricEvidence=showElectricEvidence;
+  function buildPanel(index){
+    const dept = DEPARTMENTS[deptCodes[index]];
+    const sc = statusCodes[index];
+    const watts = capacities[index % capacities.length];
+    const arequipaCases = [
+      ['Arequipa','Caravelí','Atico'],
+      ['Arequipa','Arequipa','Cerro Colorado'],
+      ['Arequipa','Arequipa','La Joya'],
+      ['Arequipa','La Unión','Huaynacotas'],
+      ['Arequipa','Castilla','Orcopampa'],
+      ['Arequipa','Castilla','Aplao']
+    ];
+    const reportGeo = arequipaCases[index % arequipaCases.length];
+    const tipoConexion = index % 8 === 0 ? 'Subterránea' : 'Aérea';
+    const conexionMonto = index % 4 === 0 ? '375.24' : '434.24';
+    return {
+      index,
+      code: panelCode(index),
+      status: statuses[sc],
+      statusLabel: statusLabel(sc),
+      department: dept[0],
+      province: dept[1],
+      district: dept[2],
+      latitude: latitudes[index],
+      longitude: longitudes[index],
+      technology: panelType[index % panelType.length],
+      capacity: `${watts} Wp`,
+      inverter: `${(1 + (index%3))} kVA`,
+      battery: `${(2 + (index%4))} x 100 Ah`,
+      installationDate: installDate(index),
+      maintenanceDate: maintenanceDate(index),
+      sync: index % 6 === 0 ? 'Pendiente de sincronización' : 'Sincronizado',
+      opex: sc === 2 ? 'Liquidación registrada' : 'Pendiente de liquidación',
+      observation: sc === 0 ? 'Trámite en etapa de instalación.' : sc === 1 ? 'Instalación finalizada, pendiente de liquidación.' : 'Trámite liquidado.',
+      empresa: 'Sociedad Eléctrica del Sur Oeste S.A. - SEAL',
+      reporteDepartamento: reportGeo[0],
+      reporteProvincia: reportGeo[1],
+      reporteDistrito: reportGeo[2],
+      tipoConexion,
+      numeroHilos: String(index % 9 === 0 ? 1 : 2),
+      potenciaConectada: String(index % 9 === 0 ? 1 : 3),
+      fechaEmision: `${String(3 + (index % 14)).padStart(2,'0')}/${String(11 + (index % 3)).padStart(2,'0')}/2025`,
+      comprobanteN: `${10 + (index % 40)}-${315040 + index * 37}`,
+      conexionMonto,
+      roturaVereda: '0.00',
+      murete: '0.00',
+      mastil: '0.00',
+      totalMonto: conexionMonto
+    };
+  }
+
+  function meterIconHTML(){
+    return `<div class="meter-marker"><svg viewBox="0 0 20 24" aria-hidden="true"><rect x="3" y="2" width="14" height="18" rx="3" fill="#ecfeff" stroke="#0f172a" stroke-width="1.4"/><circle cx="10" cy="9" r="3.2" fill="#a5f3fc" stroke="#0284c7" stroke-width="1.2"/><path d="M10 9l2-1" stroke="#0284c7" stroke-width="1.4" stroke-linecap="round"/><path d="M10 20v2" stroke="#0f172a" stroke-width="1.6"/><path d="M7 22h6" stroke="#0f172a" stroke-width="1.6"/></svg></div>`;
+  }
+  function homeIconHTML(){
+    return `<div class="home-marker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="#f97316" stroke="#7c2d12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5v9h12v-9" fill="#fff7ed" stroke="#7c2d12" stroke-width="1.5"/><rect x="10" y="14" width="4" height="5" fill="#fdba74" stroke="#7c2d12" stroke-width="1"/></svg></div>`;
+  }
+  function buildNoElectricityHome(index){
+    const rand = mulberry32(5500 + index * 61);
+    const dept = DEPARTMENTS[index % DEPARTMENTS.length];
+    const [lat,lng] = randomPointInPeru(rand);
+    return {
+      code:`HSE-${String(index+1).padStart(5,'0')}`,
+      department:dept[0], province:dept[1], district:dept[2], lat, lng,
+      family:`Familia ${['Quispe','Ramos','Mendoza','Flores','Vargas','Salazar'][index % 6]}`,
+      members:3 + (index % 5),
+      priority:index % 3 === 0 ? 'Alta' : index % 3 === 1 ? 'Media' : 'Baja',
+      status:'Sin conexión eléctrica',
+      observation:'Hogar identificado sin acceso al servicio eléctrico y priorizado para intervención.'
+    };
+  }
+  function generateNoElectricityHomes(){
+    noElectricityHomesData.length = 0;
+    for(let i=0;i<36;i++) noElectricityHomesData.push(buildNoElectricityHome(i));
+  }
+  function renderNoElectricityHomesLayer(){
+    noElectricityHomesLayer.clearLayers();
+    if(!noElectricityHomesVisible) return;
+    noElectricityHomesData.forEach(h => {
+      const marker = L.marker([h.lat,h.lng], {icon:L.divIcon({className:'', html: homeIconHTML(), iconSize:[16,16], iconAnchor:[8,8]})}).addTo(noElectricityHomesLayer);
+      marker.bindPopup(`<b>${h.code}</b><br>${h.family}<br>${h.department} · ${h.district}<br>Prioridad: ${h.priority}`);
+      marker.on('click', () => {
+        qs('panelTitle').textContent = h.code;
+        qs('panelSubtitle').innerHTML = `${h.department} · ${h.province} · ${h.district} &nbsp; <span class="badge b-warn">Sin electricidad</span>`;
+        qs('detailsTitle').textContent = 'Información del hogar sin electricidad';
+        qs('selectionModeBadge').textContent = 'Hogar';
+        qs('selectionHint').textContent = `Hogar ${h.code} seleccionado. Se muestra la información priorizada para electrificación.`;
+        qs('panelDetails').innerHTML = `
+          <div class="detail-row"><span>Código</span><b>${h.code}</b></div>
+          <div class="detail-row"><span>Familia</span><b>${h.family}</b></div>
+          <div class="detail-row"><span>Departamento</span><b>${h.department}</b></div>
+          <div class="detail-row"><span>Provincia</span><b>${h.province}</b></div>
+          <div class="detail-row"><span>Distrito</span><b>${h.district}</b></div>
+          <div class="detail-row"><span>Integrantes</span><b>${h.members}</b></div>
+          <div class="detail-row"><span>Prioridad</span><b>${h.priority}</b></div>
+          <div class="detail-row"><span>Estado</span><b>${h.status}</b></div>
+          <div class="detail-row"><span>Coordenadas</span><b>${formatCoord(h.lat)}, ${formatCoord(h.lng)}</b></div>
+          <div class="detail-row"><span>Observación</span><b>${h.observation}</b></div>`;
+        qs('summaryCard').style.display = 'none';
+        qs('evidenceSingleWrap').style.display = 'none';
+        qs('evidenceGallery').style.display = 'none';
+        qs('mapInfo').textContent = `Capa hogares sin electricidad activa. Se seleccionó el hogar ${h.code} para revisión en el panel derecho.`;
+      });
+    });
+  }
+  function generateConcessionAreas(){
+    concessionAreas.length = 0;
+    concessionAreas.push(
+      {name:'Concesión SEAL Arequipa', color:'#38bdf8', area:[[ -16.75,-72.85],[-16.20,-71.70],[-15.60,-71.95],[-15.75,-73.05]], detail:'Área concesionada referencial de SEAL en Arequipa.'},
+      {name:'Concesión Norte', color:'#22c55e', area:[[ -6.20,-80.40],[-5.10,-79.20],[-4.40,-79.75],[-5.10,-80.95]], detail:'Área concesionada referencial del norte.'},
+      {name:'Concesión Selva Centro', color:'#f59e0b', area:[[ -9.80,-75.80],[-8.60,-74.30],[-7.80,-75.20],[-8.90,-76.25]], detail:'Área concesionada referencial de selva centro.'}
+    );
+  }
+  function renderConcessionsLayer(){
+    concessionsLayer.clearLayers();
+    if(!concessionsVisible) return;
+    concessionAreas.forEach(c => {
+      const poly = L.polygon(c.area.map(([lat,lng])=>[lat,lng]), {color:c.color, weight:2, fillColor:c.color, fillOpacity:0.12}).addTo(concessionsLayer);
+      poly.bindPopup(`<b>${c.name}</b><br>${c.detail}`);
+      poly.on('click', () => {
+        qs('panelTitle').textContent = c.name;
+        qs('panelSubtitle').innerHTML = `Mapa de concesiones &nbsp; <span class="badge b-ok">Capa</span>`;
+        qs('detailsTitle').textContent = 'Información del área de concesión';
+        qs('selectionModeBadge').textContent = 'Concesión';
+        qs('selectionHint').textContent = `${c.name} seleccionada. Se muestra su información referencial.`;
+        qs('panelDetails').innerHTML = `
+          <div class="detail-row"><span>Nombre</span><b>${c.name}</b></div>
+          <div class="detail-row"><span>Tipo</span><b>Área concesionada referencial</b></div>
+          <div class="detail-row"><span>Detalle</span><b>${c.detail}</b></div>
+          <div class="detail-row"><span>Cobertura</span><b>Visible en mapa GIS</b></div>`;
+        qs('summaryCard').style.display = 'none';
+        qs('evidenceSingleWrap').style.display = 'none';
+        qs('evidenceGallery').style.display = 'none';
+        qs('mapInfo').textContent = `Mapa de concesiones activo. Se seleccionó ${c.name}.`;
+      });
+    });
+  }
+  function beneficiaryEvidence(b){
+    const supply = encodeURIComponent('SUM-' + b.suministro);
+    const dept = encodeURIComponent(b.departamento);
+    const name = encodeURIComponent(`${b.nombres} ${b.apellidoPaterno}`);
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+        <defs>
+          <linearGradient id="sky2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#e0f2fe"/></linearGradient>
+          <linearGradient id="ground2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#a7f3d0"/><stop offset="100%" stop-color="#14532d"/></linearGradient>
+        </defs>
+        <rect width="800" height="450" fill="url(#sky2)"/>
+        <circle cx="684" cy="86" r="40" fill="#fde047" opacity=".92"/>
+        <rect y="298" width="800" height="152" fill="url(#ground2)"/>
+        <rect x="426" y="188" width="44" height="150" rx="8" fill="#334155"/>
+        <rect x="394" y="144" width="108" height="84" rx="14" fill="#f8fafc" stroke="#0f172a" stroke-width="4"/>
+        <circle cx="448" cy="186" r="22" fill="#bae6fd" stroke="#0284c7" stroke-width="4"/>
+        <path d="M448 186l12-6" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+        <line x1="448" y1="228" x2="448" y2="266" stroke="#0f172a" stroke-width="5"/>
+        <line x1="430" y1="266" x2="466" y2="266" stroke="#0f172a" stroke-width="5"/>
+        <rect x="30" y="26" width="340" height="124" rx="18" fill="#0f172acc" stroke="#38bdf8" stroke-width="2"/>
+        <text x="48" y="58" fill="#ffffff" font-size="26" font-family="Arial" font-weight="700">Beneficiario Electricidad al Toque</text>
+        <text x="48" y="88" fill="#bae6fd" font-size="22" font-family="Arial">${supply}</text>
+        <text x="48" y="114" fill="#e2e8f0" font-size="18" font-family="Arial">${dept} · ${name}</text>
+        <text x="48" y="138" fill="#e2e8f0" font-size="16" font-family="Arial">Evidencia del medidor de luz</text>
+      </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+  function buildBeneficiary(index){
+    const rand = mulberry32(9100 + index * 97);
+    const arequipaCases = [
+      ['Arequipa','Caravelí','Atico'],
+      ['Arequipa','Arequipa','Cerro Colorado'],
+      ['Arequipa','Arequipa','La Joya'],
+      ['Arequipa','La Unión','Huaynacotas'],
+      ['Arequipa','Castilla','Orcopampa'],
+      ['Arequipa','Castilla','Aplao']
+    ];
+    const dept = arequipaCases[index % arequipaCases.length];
+    const [lat, lng] = randomPointInPeru(rand);
+    const paternos = ['QUISPE','TORRES','HUAMAN','MAMANI','SALAZAR','ROJAS','VARGAS','CASTILLO','SANCHEZ','PAREDES','MEJIA'];
+    const maternos = ['FLORES','RAMOS','VALDIVIA','CHOQUE','MENDOZA','SALINAS','VELASQUEZ','CORDOVA','LOPEZ','TICONA','BENAVIDES'];
+    const nombres = ['LUCIA ANDREA','MATEO ALEJANDRO','VALERIA SOFIA','DIEGO FABRIZIO','CAMILA FERNANDA','THIAGO ALONSO','MIA PAZ','JOSEFA ELENA','GAEL MATIAS','MARIANA LUZ','EMILIO RAFAEL'];
+    const baseSupply = 592644 + (index * 126);
+    const tipo = index % 8 === 0 ? 'Subterránea' : 'Aérea';
+    const conexionMonto = index % 4 === 0 ? '375.24' : '434.24';
+    const b = {
+      index,
+      suministro: String(baseSupply),
+      apellidoPaterno: paternos[index % paternos.length],
+      apellidoMaterno: maternos[index % maternos.length],
+      nombres: nombres[index % nombres.length],
+      direccion: `AA.HH. ${dept[2]} MZ ${1 + (index % 8)} LT ${1 + (index % 20)} SECTOR LOS ANGELES`,
+      dni: String(74200000 + index * 913).slice(0,8),
+      celular: `9${String(50765414 + index * 3211).slice(0,8)}`,
+      localidad: dept[2],
+      distrito: dept[2],
+      provincia: dept[1],
+      departamento: dept[0],
+      empresa: 'Sociedad Eléctrica del Sur Oeste S.A. - SEAL',
+      codigoSistema: `SED${136 + (index % 180)}`,
+      tipoConexion: tipo,
+      numeroHilos: String(index % 9 === 0 ? 1 : 2),
+      potenciaConectada: String(index % 9 === 0 ? 1 : 3),
+      fechaEmision: `${String(3 + (index % 14)).padStart(2,'0')}/${String(11 + (index % 3)).padStart(2,'0')}/2025`,
+      comprobanteN: `${10 + (index % 30)}-${315040 + index * 37}`,
+      conexionMonto,
+      roturaVereda: '0.00',
+      murete: '0.00',
+      mastil: '0.00',
+      totalMonto: conexionMonto,
+      lat,
+      lng
+    };
+    if(index===0){
+      Object.assign(b,{
+        suministro:'41097760',
+        departamento:'LAMBAYEQUE',
+        provincia:'LAMBAYEQUE',
+        distrito:'LAMBAYEQUE',
+        localidad:'LAMBAYEQUE',
+        apellidoPaterno:'ACOSTA',
+        apellidoMaterno:'REYNOZO',
+        nombres:'LUCILA',
+        direccion:'MZ. S/N LOTE S/N CASERÍO VIRGEN PURÍSIMA CONCEPCIÓN',
+        dni:'40465933'
+      });
+    }
+    b.photo = beneficiaryEvidence(b);
+    return b;
+  }
+  function generateBeneficiaries(){
+    beneficiaryData.length = 0;
+    for(let i = 0; i < 42; i++) beneficiaryData.push(buildBeneficiary(i));
+  }
+  function renderBeneficiaryLayer(){
+    beneficiaryLayer.clearLayers();
+    if(!beneficiariesVisible) return;
+    beneficiaryData.forEach((b, idx) => {
+      const marker = L.marker([b.lat, b.lng], {
+        icon: L.divIcon({className:'', html: meterIconHTML(), iconSize:[14,18], iconAnchor:[7,9]})
+      }).addTo(beneficiaryLayer);
+      marker.on('click', () => selectBeneficiary(idx, true));
+      marker.bindPopup(`<b>Suministro ${b.suministro}</b><br>${b.nombres} ${b.apellidoPaterno}<br>${b.departamento} · ${b.distrito}<br><button class="meter-popup-btn" onclick="selectBeneficiary(${idx}, true)">Ver información</button>`);
+    });
+  }
+
+  function findBeneficiaryIndex(query){
+    const raw = String(query || '').trim();
+    const digits = raw.replace(/\D/g, '');
+    if(!digits) return -1;
+    return beneficiaryData.findIndex(b => {
+      const dni = String(b.dni || '').replace(/\D/g, '');
+      const sum = String(b.suministro || '').replace(/\D/g, '');
+      return dni === digits || sum === digits
+        || (digits.length >= 6 && (dni.endsWith(digits) || sum.endsWith(digits)));
+    });
+  }
+  function searchByDniOrSuministro(){
+    const input = qs('dniSuministroSearch');
+    const raw = (input?.value || '').trim();
+    if(!raw){
+      qs('mapInfo').textContent = 'Ingrese un DNI o número de suministro para buscar.';
+      input?.focus();
+      return;
+    }
+    const idx = findBeneficiaryIndex(raw);
+    if(idx < 0){
+      qs('mapInfo').textContent = `No se encontró beneficiario con DNI o suministro "${raw}".`;
+      return;
+    }
+    if(!beneficiariesVisible){
+      const toggle = qs('showBeneficiarios');
+      if(toggle) toggle.checked = true;
+      beneficiariesVisible = true;
+      renderBeneficiaryLayer();
+      toggleLayersPanel(true);
+    }
+    selectBeneficiary(idx, true);
+    qs('mapInfo').textContent = `Beneficiario encontrado: suministro ${beneficiaryData[idx].suministro} · DNI ${beneficiaryData[idx].dni}.`;
+  }
+  function selectBeneficiary(index, pan = false){
+    clearCircularSelection();
+    const b = beneficiaryData[index];
+    if(!b) return;
+    selectedIndex = null;
+    solarLayer.setSelected(null);
+    if(selectionMarker){ map.removeLayer(selectionMarker); }
+    selectionMarker = L.marker([b.lat, b.lng], {
+      icon: L.divIcon({className:'', html: meterIconHTML(), iconSize:[14,18], iconAnchor:[7,9]})
+    }).addTo(map);
+    selectionMarker.bindPopup(`<b>Suministro ${b.suministro}</b><br>${b.nombres} ${b.apellidoPaterno}<br>${b.departamento} · ${b.distrito}`).openPopup();
+    qs('panelTitle').textContent = `SUM-${b.suministro}`;
+    qs('panelSubtitle').innerHTML = `${b.departamento} · ${b.provincia} · ${b.distrito} &nbsp; <span class="badge b-ok">Beneficiario</span>`;
+    qs('selectionHint').textContent = `Beneficiario ${b.suministro} seleccionado. Se cargó toda la información del suministro en el panel derecho.`;
+    qs('toolHint').textContent = 'Modo actual: selección de beneficiarios mediante iconos de medidor de luz.';
+    qs('detailsTitle').textContent = 'Información del beneficiario seleccionado';
+    qs('selectionModeBadge').textContent = 'Beneficiario';
+    qs('summaryCard').style.display = 'none';
+    qs('evidenceSingleWrap').style.display = 'block';
+    qs('evidenceGallery').style.display = 'none';
+    qs('evidenceSubtitle').textContent = 'Caja, medidor, interruptor, predio y DNI';
+    qs('evidenceCountBadge').textContent = '1/5';
+    qs('panelDetails').innerHTML = `
+      <div class="detail-row"><span>Número de suministro</span><b>${b.suministro}</b></div>
+      <div class="detail-row"><span>Región</span><b>${b.departamento}</b></div>
+      <div class="detail-row"><span>Provincia</span><b>${b.provincia}</b></div>
+      <div class="detail-row"><span>Distrito</span><b>${b.distrito}</b></div>
+      <div class="detail-row"><span>Apellido paterno</span><b>${b.apellidoPaterno}</b></div>
+      <div class="detail-row"><span>Apellido materno</span><b>${b.apellidoMaterno}</b></div>
+      <div class="detail-row"><span>Nombre del beneficiario</span><b>${b.nombres}</b></div>
+      <div class="detail-row"><span>Dirección del beneficiario</span><b>${b.direccion}</b></div>
+      <div class="detail-row"><span>Número de documento</span><b>${b.dni}</b></div>
+      <div class="detail-row"><span>Código del beneficiario</span><b>${b.codigoSistema}</b></div>
+      <div class="detail-row"><span>Tipo de conexión</span><b>${b.tipoConexion}</b></div>
+      <div class="detail-row"><span>Número de hilos medidor</span><b>${b.numeroHilos}</b></div>
+      <div class="detail-row"><span>Potencia conectada kW</span><b>${b.potenciaConectada}</b></div>
+      <div class="detail-row"><span>Fecha de emisión</span><b>${b.fechaEmision}</b></div>
+      <div class="detail-row"><span>Comprobante de venta N°</span><b>${b.comprobanteN}</b></div>
+      <div class="detail-row"><span>Conexión</span><b>${b.conexionMonto}</b></div>
+      <div class="detail-row"><span>Rotura y resane de vereda</span><b>${b.roturaVereda}</b></div>
+      <div class="detail-row"><span>Murete</span><b>${b.murete}</b></div>
+      <div class="detail-row"><span>Mástil</span><b>${b.mastil}</b></div>
+      <div class="detail-row"><span>Total</span><b>${b.totalMonto}</b></div>
+      <div class="detail-row"><span>Coordenadas</span><b>${formatCoord(b.lat)}, ${formatCoord(b.lng)}</b></div>`;
+    setElectricEvidenceCarousel(b);
+    qs('mapInfo').textContent = `Capa beneficiarios activa. Se seleccionó el suministro ${b.suministro} y se cargó toda la información en el panel derecho.`;
+    if(pan) map.panTo([b.lat, b.lng]);
+  }
+  function setActiveUtil(id){
+    document.querySelectorAll('.util-btn').forEach(b => b.classList.remove('active'));
+    qs(id).classList.add('active');
+  }
+  function renderEvidenceThumb(panel, label){
+    return `<div class="thumb-card"><img src="${evidenceImage(panel)}" alt="${panel.code}"><span>${label}</span></div>`;
+  }
+  function renderSummary(selection, centerLatLng){
+    const total = selection.length;
+    const op = selection.filter(p => p.status === 'operativo').length;
+    const ob = selection.filter(p => p.status === 'observado').length;
+    const ina = selection.filter(p => p.status === 'inactivo').length;
+    const beneficiaries = total;
+    const totalLiquidacion = total * 2100;
+    const totalCapacity = selection.reduce((acc,p) => acc + Number(String(p.capacity).replace(/[^0-9]/g,'' ) || 0), 0);
+    const avgCapacity = total ? Math.round(totalCapacity / total) : 0;
+    const opPct = total ? Math.round((op/total)*100) : 0;
+    const obPct = total ? Math.round((ob/total)*100) : 0;
+    const inaPct = total ? Math.round((ina/total)*100) : 0;
+    const progress = [
+      ['Beneficiarios', total],
+      ['Instalación', op],
+      ['Finalizados', ob],
+      ['Liquidados', ina],
+      ['Beneficiarios', beneficiaries]
+    ];
+    const max = Math.max(total,1);
+    const depts = [...new Set(selection.map(p => p.department))].slice(0,5).join(', ');
+    qs('summaryCard').style.display = 'block';
+    qs('summaryContent').innerHTML = `
+      <div class="summary-grid">
+        <div class="summary-kpi"><span>Beneficiarios seleccionados</span><b>${total}</b></div>
+        <div class="summary-kpi"><span>Radio aplicado</span><b>${Math.round(circleSelectionRadius/1000)} km</b></div>
+        <div class="summary-kpi"><span>Instalación</span><b>${op}</b></div>
+        <div class="summary-kpi"><span>Finalizados</span><b>${ob}</b></div>
+        <div class="summary-kpi"><span>Liquidados</span><b>${ina}</b></div>
+        <div class="summary-kpi"><span>Beneficiarios</span><b>${beneficiaries}</b></div>
+      </div>
+      <div class="summary-total">
+        <div class="summary-total-row"><span>Total liquidaciones</span><b>S/ ${totalLiquidacion.toLocaleString('es-PE')}</b></div>
+        <div class="summary-total-row"><span>Capacidad total estimada</span><b>${totalCapacity.toLocaleString('es-PE')} Wp</b></div>
+        <div class="summary-total-row"><span>Potencia promedio</span><b>${avgCapacity.toLocaleString('es-PE')} Wp</b></div>
+        <div class="summary-total-row"><span>% operativos / observados / inactivos</span><b>${opPct}% · ${obPct}% · ${inaPct}%</b></div>
+        <div class="summary-total-row"><span>Zonas incluidas</span><b>${depts || 'Sin datos'}</b></div>
+        <div class="summary-total-row"><span>Centro de la circunferencia</span><b>${formatCoord(centerLatLng.lat)}, ${formatCoord(centerLatLng.lng)}</b></div>
+      </div>
+      <div class="progress-list">
+        ${progress.map(([name,val]) => `<div class="progress-row"><span>${name}</span><div class="progress-track"><div class="progress-fill" style="width:${(val/max)*100}%"></div></div><b>${val}</b></div>`).join('')}
+      </div>`;
+  }
+
+  function parseNumeric(value){
+    return Number(String(value ?? '').replace(/[^0-9.]/g,'')) || 0;
+  }
+  function parseDateDMY(value){
+    const m = String(value || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(!m) return null;
+    return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  }
+  function formatDateDMY(date){
+    if(!date || isNaN(date.getTime())) return 'Sin dato';
+    return String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0') + '/' + date.getFullYear();
+  }
+  function renderMassSelectionCards(selection, centerLatLng){
+    const total = selection.length;
+    const sub = selection.filter(p => String(p.tipoConexion || '').toLowerCase().includes('sub')).length;
+    const aerea = selection.filter(p => !String(p.tipoConexion || '').toLowerCase().includes('sub')).length;
+    const totalHilos = selection.reduce((acc,p) => acc + parseNumeric(p.numeroHilos), 0);
+    const totalKw = selection.reduce((acc,p) => acc + parseNumeric(p.potenciaConectada), 0);
+    const fechas = selection.map(p => parseDateDMY(p.fechaEmision)).filter(Boolean).sort((a,b) => a - b);
+    const firstDate = fechas.length ? formatDateDMY(fechas[0]) : 'Sin dato';
+    const lastDate = fechas.length ? formatDateDMY(fechas[fechas.length - 1]) : 'Sin dato';
+    const comprobantes = selection.length;
+    const sumConexion = selection.reduce((acc,p) => acc + parseNumeric(p.conexionMonto), 0);
+    const sumRotura = selection.reduce((acc,p) => acc + parseNumeric(p.roturaVereda), 0);
+    const sumMurete = selection.reduce((acc,p) => acc + parseNumeric(p.murete), 0);
+    const sumMastil = selection.reduce((acc,p) => acc + parseNumeric(p.mastil), 0);
+    const sumTotal = selection.reduce((acc,p) => acc + parseNumeric(p.totalMonto), 0);
+    const promedioKw = total ? (totalKw / total).toFixed(2) : '0.00';
+    qs('panelDetails').innerHTML = `
+      <div class="summary-grid">
+        <div class="summary-kpi"><span>Tipo de conexión</span><b style="font-size:15px">Sub ${sub} · Aérea ${aerea}</b></div>
+        <div class="summary-kpi"><span>Número de hilos medidor</span><b>${totalHilos}</b></div>
+        <div class="summary-kpi"><span>Potencia conectada kW</span><b>${totalKw}</b></div>
+        <div class="summary-kpi"><span>Fecha de emisión</span><b style="font-size:14px">${firstDate} → ${lastDate}</b></div>
+        <div class="summary-kpi"><span>Comprobante de venta N°</span><b>${comprobantes}</b></div>
+        <div class="summary-kpi"><span>Conexión</span><b>${sumConexion.toFixed(2)}</b></div>
+        <div class="summary-kpi"><span>Rotura y resane de vereda</span><b>${sumRotura.toFixed(2)}</b></div>
+        <div class="summary-kpi"><span>Murete</span><b>${sumMurete.toFixed(2)}</b></div>
+        <div class="summary-kpi"><span>Mástil</span><b>${sumMastil.toFixed(2)}</b></div>
+        <div class="summary-kpi"><span>Total</span><b>${sumTotal.toFixed(2)}</b></div>
+      </div>
+      <div class="summary-total">
+        <div class="summary-total-row"><span>Empresa</span><b>SEAL Arequipa</b></div>
+        <div class="summary-total-row"><span>Beneficiarios seleccionados</span><b>${total}</b></div>
+        <div class="summary-total-row"><span>Centro del círculo</span><b>${formatCoord(centerLatLng.lat)}, ${formatCoord(centerLatLng.lng)}</b></div>
+        <div class="summary-total-row"><span>Radio aplicado</span><b>${Math.round(circleSelectionRadius/1000)} km</b></div>
+        <div class="summary-total-row"><span>Promedio de potencia</span><b>${promedioKw} kW</b></div>
+      </div>`;
+  }
+  function drawCircularSelection(latlng){
+    circleDraftActive = false;
+    if(selectionMarker){ map.removeLayer(selectionMarker); selectionMarker = null; }
+    selectionCenterLatLng = latlng;
+    if(selectionCircle){ map.removeLayer(selectionCircle); }
+    selectionCircle = L.circle(latlng, {radius: circleSelectionRadius, className:'selection-ring'}).addTo(map);
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); }
+    selectionCenterMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="center-marker"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(map);
+    multiSelection = [];
+    for(let i=0; i<TOTAL_PANELS; i++){
+      const statusName = statuses[statusCodes[i]];
+      if((statusName==='operativo' && !showState.operativo) || (statusName==='observado' && !showState.observado) || (statusName==='inactivo' && !showState.inactivo)) continue;
+      const dist = map.distance(latlng, [latitudes[i], longitudes[i]]);
+      if(dist <= circleSelectionRadius) multiSelection.push(buildPanel(i));
+    }
+    solarLayer.setSelected(null);
+    qs('panelTitle').textContent = 'Selección circular';
+    qs('panelSubtitle').innerHTML = `SEAL Arequipa · ${multiSelection.length} beneficiarios dentro del área &nbsp; <span class="badge b-ok">Circular</span>`;
+    qs('selectionHint').textContent = `Selección circular aplicada. Ahora puedes conocer la información estadística de ${multiSelection.length} beneficiarios seleccionados dentro de la circunferencia.`;
+    qs('detailsTitle').textContent = 'Totales de la selección masiva';
+    qs('selectionModeBadge').textContent = 'Circular';
+    renderMassSelectionCards(multiSelection, latlng);
+    qs('evidenceSingleWrap').style.display = 'none';
+    qs('evidenceGallery').style.display = 'grid';
+    qs('evidenceSubtitle').textContent = 'Mínimo 3 fotos obligatorias';
+    qs('evidenceCountBadge').textContent = `${Math.min(3, multiSelection.length)}/3 fotos`;
+    qs('evidenceGallery').innerHTML = (multiSelection.slice(0,3).length ? multiSelection.slice(0,3) : [buildPanel(0),buildPanel(1),buildPanel(2)]).map((p,idx) => renderEvidenceThumb(p, idx===0 ? 'Inspección' : idx===1 ? 'Vista general' : 'Instalación')).join('');
+    renderSummary(multiSelection, latlng);
+    qs('mapInfo').textContent = `Selección circular activa con centro marcado y radio de ${Math.round(circleSelectionRadius/1000)} km. El panel derecho muestra la información estadística de los beneficiarios seleccionados dentro de la circunferencia.`;
+    updateElecReportStatus();
+  }
+  function previewCircularSelection(latlng, radius){
+    selectionCenterLatLng = latlng;
+    circleSelectionRadius = Math.max(1000, radius || circleSelectionRadius || 65000);
+    if(selectionCircle){ map.removeLayer(selectionCircle); }
+    selectionCircle = L.circle(latlng, {radius: circleSelectionRadius, className:'selection-ring'}).addTo(map);
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); }
+    selectionCenterMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="center-marker"></div>', iconSize:[18,18], iconAnchor:[9,9]})}).addTo(map);
+  }
+  function startCircleDraft(latlng){
+    circleDraftActive = true;
+    previewCircularSelection(latlng, circleSelectionRadius);
+    qs('mapInfo').textContent = 'Centro definido. Mueva el cursor para ajustar el radio y haga doble clic para cerrar el círculo.';
+  }
+  function handleCircleToolClick(latlng){
+    if(!selectionCenterLatLng || !circleDraftActive){
+      startCircleDraft(latlng);
+      return;
+    }
+    circleSelectionRadius = Math.max(1000, map.distance(selectionCenterLatLng, latlng));
+    previewCircularSelection(selectionCenterLatLng, circleSelectionRadius);
+  }
+  function updateCircleDraft(latlng){
+    if(mapTool !== 'circle' || !circleDraftActive || !selectionCenterLatLng) return;
+    previewCircularSelection(selectionCenterLatLng, map.distance(selectionCenterLatLng, latlng));
+  }
+  function finalizeCircleDraft(){
+    if(selectionCenterLatLng){
+      drawCircularSelection(selectionCenterLatLng);
+    } else {
+      qs('mapInfo').textContent = 'Primero haz clic en el mapa para marcar el centro de la selección circular.';
+    }
+  }
+  function clearCircularSelection(){
+    if(selectionCircle){ map.removeLayer(selectionCircle); selectionCircle = null; }
+    if(selectionCenterMarker){ map.removeLayer(selectionCenterMarker); selectionCenterMarker = null; }
+    selectionCenterLatLng = null;
+    circleDraftActive = false;
+    multiSelection = [];
+  }
+  function setPinModalOpen(open){
+    qs('pinModal').classList.toggle('open', open);
+  }
+  function openPinModal(latlng){
+    draftPinLatLng = latlng;
+    if(draftPinMarker){ map.removeLayer(draftPinMarker); }
+    draftPinMarker = L.marker(latlng, {icon:L.divIcon({className:'', html:'<div class="pin-marker"></div>', iconSize:[18,18], iconAnchor:[9,18]})}).addTo(map);
+    qs('pinLat').value = formatCoord(latlng.lat);
+    qs('pinLng').value = formatCoord(latlng.lng);
+    qs('pinTechnology').value = 'Bifacial';
+    qs('pinCapacity').value = '550 Wp';
+    qs('pinInverter').value = '3 kVA';
+    qs('pinBattery').value = '5 x 100 Ah';
+    qs('pinInstallation').value = '12/12/2025';
+    qs('pinMaintenance').value = '10/06/2026';
+    qs('pinSync').value = 'Sincronizado';
+    qs('pinOpex').value = 'Pago OPEX habilitado';
+    qs('pinObservation').value = 'Equipo operativo sin incidencias críticas.';
+    qs('pinStatusMsg').textContent = 'Punto capturado. Completa la información técnica y envíala a un usuario supervisor.';
+    qs('pinSendStatus').value = 'Pendiente de envío';
+    qs('mapInfo').textContent = `Tachuela colocada en ${formatCoord(latlng.lat)}, ${formatCoord(latlng.lng)}. Completa el modal para registrar el punto y enviarlo a supervisión.`;
+    setPinModalOpen(true);
+  }
+  function closePinModal(){
+    setPinModalOpen(false);
+  }
+  function savePinDraft(){
+    qs('pinSendStatus').value = 'Borrador guardado';
+    qs('pinStatusMsg').textContent = 'Borrador guardado correctamente para revisión posterior.';
+    qs('mapInfo').textContent = 'Borrador del nuevo punto Electricidad al Toque guardado.';
+  }
+  function sendPinForSupervision(){
+    const supervisor = qs('pinSupervisor').value;
+    if(!supervisor){
+      qs('pinStatusMsg').textContent = 'Selecciona un usuario supervisor antes de enviar.';
+      return;
+    }
+    qs('pinSendStatus').value = `Enviado a ${supervisor}`;
+    qs('pinStatusMsg').textContent = `Registro enviado a ${supervisor} para su supervisión.`;
+    qs('mapInfo').textContent = `El nuevo punto Electricidad al Toque fue enviado a ${supervisor} para supervisión.`;
+  }
+
+  function setDgerModalOpen(open){
+    qs('dgerModal').classList.toggle('open', open);
+  }
+  function openDgerModal(){
+    setDgerModalOpen(true);
+    qs('toolHint').textContent = 'Modo actual: carga de Excel DGER para morosidad y cargos RER.';
+    qs('mapInfo').textContent = 'Carga un archivo Excel DGER para automatizar el cálculo de morosidad y cargos RER.';
+  }
+  function closeDgerModal(){
+    setDgerModalOpen(false);
+  }
+  function dgerFileChosen(){
+    const input = qs('dgerExcelInput');
+    const file = input.files && input.files[0];
+    qs('dgerFileName').value = file ? file.name : 'Ningún archivo seleccionado';
+    qs('dgerStatusMsg').textContent = file ? `Archivo listo para procesar: ${file.name}` : 'Selecciona un archivo Excel para iniciar el procesamiento.';
+  }
+  function processDgerExcel(){
+    const input = qs('dgerExcelInput');
+    const file = input.files && input.files[0];
+    if(!file){
+      qs('dgerStatusMsg').textContent = 'Primero selecciona un archivo Excel DGER.';
+      return;
+    }
+    const base = Math.max(18, file.name.length * 3);
+    const mor = base * 1250;
+    const rer = Math.round(mor * 0.24);
+    const rows = base + 12;
+    qs('dgerMorosidad').textContent = `S/ ${mor.toLocaleString('es-PE')}`;
+    qs('dgerRer').textContent = `S/ ${rer.toLocaleString('es-PE')}`;
+    qs('dgerRows').textContent = String(rows);
+    qs('dgerStatusMsg').textContent = `Procesamiento completado. Se generó el reporte técnico de sustento para transferencia a partir de ${file.name}.`;
+    qs('mapInfo').textContent = `Excel DGER procesado: ${file.name}. Morosidad y cargo RER calculados automáticamente.`;
+  }
+
+  function money(v){
+    return Number(String(v || '0').replace(/[^0-9.-]/g,'')) || 0;
+  }
+  function sampleAnexo4Rows(){
+    const data = [
+      ['592644','ATICO','CARAVELI','AREQUIPA','SE0136','AÉREA',2,3,'05/11/2025','31-4504',434.24],
+      ['592770','CERRO COLORADO','AREQUIPA','AREQUIPA','SE0134','AÉREA',2,3,'07/11/2025','10-133737',375.24],
+      ['592898','LA JOYA','AREQUIPA','AREQUIPA','SE0251','AÉREA',2,3,'12/11/2025','10-133829',434.24],
+      ['592766','ATICO','CARAVELI','AREQUIPA','SE0136','AÉREA',2,3,'07/11/2025','10-133735',434.24],
+      ['594520','HUAYNACOTAS','LA UNION','AREQUIPA','SE1147','AÉREA',2,3,'19/12/2025','42-923',434.24],
+      ['594637','HUAYNACOTAS','LA UNION','AREQUIPA','SE1147','AÉREA',2,3,'23/12/2025','42-924',434.24],
+      ['594208','LA JOYA','AREQUIPA','AREQUIPA','SE0251','AÉREA',2,1,'16/12/2025','50-5454',434.24],
+      ['594215','LA JOYA','AREQUIPA','AREQUIPA','SE0251','AÉREA',2,3,'16/12/2025','10-134630',434.24],
+      ['593743','ORCOPAMPA','CASTILLA','AREQUIPA','SE1147','AÉREA',2,3,'02/12/2025','44-315',434.24],
+      ['595239','APLAO','CASTILLA','AREQUIPA','SE0252','AÉREA',2,3,'13/01/2026','40-2413',434.24],
+      ['595244','APLAO','CASTILLA','AREQUIPA','SE0252','AÉREA',2,3,'13/01/2026','40-2412',434.24]
+    ];
+    const coords = [[-16.2231,-73.6112],[-16.3764,-71.5608],[-16.4236,-71.8361],[-16.2260,-73.6078],[-15.1752,-72.8314],[-15.1741,-72.8297],[-16.4198,-71.8295],[-16.4167,-71.8322],[-15.2668,-72.3411],[-16.0762,-72.4926],[-16.0748,-72.4899]];
+    return data.map((r,i) => ({suministro:r[0], distrito:r[1], provincia:r[2], departamento:r[3], codigoSistema:r[4], tipoConexion:r[5], numeroHilos:r[6], potencia:r[7], fechaEmision:r[8], comprobante:r[9], conexion:r[10], rotura:0, murete:0, mastil:0, total:r[10], latitud:coords[i][0], longitud:coords[i][1]}));
+  }
+  function sampleFicefRows(){
+    return sampleAnexo4Rows().map((r,i) => ({
+      ...r,
+      total:i === 2 ? r.total - 28 : r.total,
+      codigoSistema:i === 5 ? 'SE1148' : r.codigoSistema,
+      latitud:i === 7 ? r.latitud + 0.008 : r.latitud,
+      longitud:i === 7 ? r.longitud + 0.006 : r.longitud
+    }));
+  }
+  function extractAnexo4Rows(aoa){
+    const rows = [];
+    aoa.forEach(r => {
+      const c = (r || []).map(x => String(x || '').trim());
+      if(/^[0-9]+$/.test(c[0] || '') && /^[0-9]{5,}$/.test(c[1] || '')){
+        rows.push({
+          suministro:c[1], distrito:c[9] || c[8] || '', provincia:c[10] || '', departamento:c[11] || '', codigoSistema:c[12] || '', tipoConexion:c[13] || '', numeroHilos:money(c[14]), potencia:money(c[15]), fechaEmision:c[16] || '', comprobante:c[17] || '', conexion:money(c[18]), rotura:money(c[19]), murete:money(c[20]), mastil:money(c[21]), total:money(c[22] || c[18]), latitud:money(c[23]), longitud:money(c[24])
+        });
+      }
+    });
+    return rows;
+  }
+  function setAnexo4ModalOpen(open){
+    qs('anexo4Modal').classList.toggle('open', open);
+  }
+  function openAnexo4Modal(){
+    setAnexo4ModalOpen(true);
+    qs('toolHint').textContent = 'Modo actual: validación Anexo 4 contra FICEF para agilizar el reembolso.';
+    qs('mapInfo').textContent = 'Carga el Excel Anexo 4 y valida suministros, datos técnicos y montos contra FICEF.';
+  }
+  function closeAnexo4Modal(){
+    setAnexo4ModalOpen(false);
+  }
+  function anexo4DistanceMeters(a, b){
+    if(!a || !b || !Number(a.latitud) || !Number(a.longitud) || !Number(b.latitud) || !Number(b.longitud)) return null;
+    const rad = Math.PI / 180;
+    const dLat = (Number(b.latitud)-Number(a.latitud))*rad;
+    const dLng = (Number(b.longitud)-Number(a.longitud))*rad;
+    const x = Math.sin(dLat/2)**2 + Math.cos(Number(a.latitud)*rad)*Math.cos(Number(b.latitud)*rad)*Math.sin(dLng/2)**2;
+    return 6371000 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+  }
+  function anexo4FileChosen(){
+    const input = qs('anexo4ExcelInput');
+    const file = input.files && input.files[0];
+    if(!file) return;
+    anexo4LastFile = file.name;
+    qs('anexo4FileName').value = file.name;
+    qs('anexo4StatusMsg').textContent = 'Leyendo estructura del Anexo 4...';
+    if(window.XLSX){
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        try{
+          const wb = XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:''});
+          anexo4Rows = extractAnexo4Rows(aoa);
+          if(!anexo4Rows.length) anexo4Rows = sampleAnexo4Rows();
+          qs('anexo4StatusMsg').textContent = `Excel cargado: ${anexo4Rows.length} registros detectados. Presiona validar contra FICEF.`;
+        }catch(err){
+          anexo4Rows = sampleAnexo4Rows();
+          qs('anexo4StatusMsg').textContent = 'Vista de maqueta: se cargó una muestra SEAL Arequipa para validar.';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }else{
+      anexo4Rows = sampleAnexo4Rows();
+      qs('anexo4StatusMsg').textContent = 'Vista de maqueta: se cargó una muestra SEAL Arequipa para validar.';
+    }
+  }
+  function validateAnexo4AgainstFicef(){
+    if(!anexo4Rows.length) anexo4Rows = sampleAnexo4Rows();
+    const ficef = sampleFicefRows().reduce((m,r)=>{m[r.suministro]=r;return m;},{});
+    const detail = anexo4Rows.map(r => {
+      const ref = ficef[r.suministro];
+      const obs = [];
+      const distance = anexo4DistanceMeters(r, ref);
+      if(!ref) obs.push('No existe en FICEF');
+      if(ref && Math.abs(money(r.total)-money(ref.total)) > 0.01) obs.push('Diferencia de monto');
+      if(ref && String(r.codigoSistema || '').trim() !== String(ref.codigoSistema || '').trim()) obs.push('Código de beneficiario distinto');
+      if(ref && Number(r.numeroHilos) !== Number(ref.numeroHilos)) obs.push('N.º de hilos distinto');
+      if(ref && Number(r.potencia) !== Number(ref.potencia)) obs.push('Potencia distinta');
+      if(ref && distance === null) obs.push('Coordenadas no informadas');
+      if(ref && distance !== null && distance > 100) obs.push(`Coordenadas desplazadas (${Math.round(distance)} m)`);
+      return {...r, distance, valid:obs.length===0, obs: obs.join(' · ') || 'Coincide'};
+    });
+    const total = detail.length;
+    const ok = detail.filter(x=>x.valid).length;
+    const obs = total - ok;
+    const totalAnexo = detail.reduce((a,r)=>a+money(r.total),0);
+    const totalFicef = detail.reduce((a,r)=>a+money((ficef[r.suministro]||{}).total),0);
+    const diff = totalAnexo - totalFicef;
+    qs('anexo4RowsKpi').textContent = total;
+    qs('anexo4OkKpi').textContent = ok;
+    qs('anexo4ObsKpi').textContent = obs;
+    qs('anexo4DiffKpi').textContent = `S/ ${diff.toFixed(2)}`;
+    qs('anexo4SummaryBox').innerHTML = `
+      <div class="summary-total-row"><span>Empresa</span><b>SEAL Arequipa</b></div>
+      <div class="summary-total-row"><span>Archivo</span><b>${anexo4LastFile || 'Anexo 04 v2.xlsx'}</b></div>
+      <div class="summary-total-row"><span>Total Anexo 4</span><b>S/ ${totalAnexo.toLocaleString('es-PE',{minimumFractionDigits:2})}</b></div>
+      <div class="summary-total-row"><span>Total FICEF</span><b>S/ ${totalFicef.toLocaleString('es-PE',{minimumFractionDigits:2})}</b></div>
+      <div class="summary-total-row"><span>Tolerancia geográfica</span><b>Hasta 100 m</b></div>
+      <div class="summary-total-row"><span>Resultado</span><b>${obs===0 ? 'Apto para reembolso' : 'Con observaciones'}</b></div>`;
+    qs('anexo4DetailTable').innerHTML = `<table style="width:100%;min-width:780px;border-collapse:separate;border-spacing:0 6px"><thead><tr><th style="text-align:left;color:#93a4c7">Suministro</th><th style="text-align:left;color:#93a4c7">Distrito</th><th style="text-align:left;color:#93a4c7">Beneficiario</th><th style="text-align:left;color:#93a4c7">Coordenadas</th><th style="text-align:right;color:#93a4c7">Distancia</th><th style="text-align:right;color:#93a4c7">Total S/</th><th style="text-align:left;color:#93a4c7">Resultado</th></tr></thead><tbody>${detail.map(r=>`<tr><td>${r.suministro}</td><td>${r.distrito}</td><td>${r.codigoSistema}</td><td>${Number(r.latitud)?Number(r.latitud).toFixed(5):'—'}, ${Number(r.longitud)?Number(r.longitud).toFixed(5):'—'}</td><td style="text-align:right">${r.distance===null?'—':Math.round(r.distance)+' m'}</td><td style="text-align:right">${money(r.total).toFixed(2)}</td><td><span class="badge ${r.valid?'b-ok':'b-warn'}">${r.obs}</span></td></tr>`).join('')}</tbody></table>`;
+    qs('anexo4StatusMsg').textContent = 'Validación de maqueta completada: suministro, datos técnicos, coordenadas y montos contrastados con FICEF.';
+    qs('mapInfo').textContent = `Anexo 4 validado contra FICEF: ${ok} coincidencias, ${obs} observaciones, diferencia S/ ${diff.toFixed(2)}.`;
+  }
+  function generateAnexo4Report(){
+    validateAnexo4AgainstFicef();
+    qs('anexo4StatusMsg').textContent = 'Reporte de liquidación generado en la maqueta para SEAL Arequipa, con el detalle de inconsistencias.';
+  }
+
+  function elecMoney(v){
+    return 'S/ ' + Number(v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function getElecReportContext(){
+    if(multiSelection && multiSelection.length){
+      return {
+        panels: multiSelection.slice(),
+        mode: 'Circular',
+        label: `${multiSelection.length} beneficiarios · radio ${Math.round(circleSelectionRadius / 1000)} km`
+      };
+    }
+    if(selectedIndex !== null && selectedIndex !== undefined){
+      const panel = buildPanel(selectedIndex);
+      return { panels: [panel], mode: 'Individual', label: panel.code };
+    }
+    return null;
+  }
+  function elecReportTotals(panels){
+    return panels.reduce((acc, panel) => {
+      acc.conexion += parseNumeric(panel.conexionMonto);
+      acc.rotura += parseNumeric(panel.roturaVereda);
+      acc.murete += parseNumeric(panel.murete);
+      acc.mastil += parseNumeric(panel.mastil);
+      acc.total += parseNumeric(panel.totalMonto);
+      acc.kw += parseNumeric(panel.potenciaConectada);
+      return acc;
+    }, { conexion: 0, rotura: 0, murete: 0, mastil: 0, total: 0, kw: 0 });
+  }
+  function elecReportFileToken(ctx){
+    const base = ctx.panels[0]?.code || 'EAT';
+    return String(base).replace(/[^\w-]+/g, '_');
+  }
+  function updateElecReportStatus(){
+    const meta = qs('elecReportMeta');
+    if(meta){
+      const ctx = getElecReportContext();
+      if(!ctx){
+        meta.textContent = 'Seleccione un beneficiario en el mapa para habilitar la generación.';
+      } else {
+        const fin = elecReportTotals(ctx.panels);
+        meta.textContent = `${ctx.mode}: ${ctx.label} · ${ctx.panels.length} registro(s) · Conexión ${elecMoney(fin.conexion)} · Total ${elecMoney(fin.total)} · ${fin.kw.toFixed(1)} kW`;
+      }
+    }
+    updateElecExpedienteStatus();
+  }
+  function updateElecExpedienteStatus(){
+    const meta = qs('elecExpedienteMeta');
+    if(!meta) return;
+    const ctx = getElecReportContext();
+    if(!ctx){
+      meta.textContent = 'Modo sede manual: use el botón para cargar PDF y fotografías sin selección en mapa.';
+      return;
+    }
+    const panel = ctx.panels[0];
+    meta.textContent = ctx.mode === 'Individual'
+      ? `Beneficiario ${panel.code} · ${panel.district} · listo para vincular expediente digital.`
+      : `${ctx.label} · seleccione un beneficiario individual para prellenar la sede manual.`;
+  }
+  function prefillElecExpedienteFromSelection(){
+    const ctx = getElecReportContext();
+    const panel = ctx && ctx.mode === 'Individual' ? ctx.panels[0] : null;
+    qs('elecExpedienteCode').value = panel ? panel.code : '';
+    qs('elecExpedienteDistrict').value = panel ? panel.district : '';
+    qs('elecExpedienteTipo').value = 'comunidad';
+    elecExpedientePdfFile = null;
+    elecExpedientePhotos = [];
+    qs('elecExpedientePdfInput').value = '';
+    qs('elecExpedientePhotosInput').value = '';
+    renderElecExpedienteFileList();
+    qs('elecExpedienteStatusMsg').textContent = panel
+      ? `Sede vinculada a ${panel.code}. Adjunte PDF del expediente y fotografías de soporte.`
+      : 'Complete la identificación de la sede manual y adjunte al menos el PDF del expediente.';
+  }
+  function renderElecExpedienteFileList(){
+    const list = qs('elecExpedienteFileList');
+    if(!list) return;
+    const items = [];
+    if(elecExpedientePdfFile){
+      items.push({ name: elecExpedientePdfFile.name, tag: 'PDF' });
+    }
+    elecExpedientePhotos.forEach(file => items.push({ name: file.name, tag: 'Foto' }));
+    list.innerHTML = items.length
+      ? items.map(item => `<li><span>${item.name}</span><span class="tag">${item.tag}</span></li>`).join('')
+      : '<li><span>Sin archivos cargados</span><span class="tag">—</span></li>';
+  }
+  function openElecExpedienteModal(){
+    prefillElecExpedienteFromSelection();
+    qs('elecExpedienteModal').classList.add('open');
+    qs('mapInfo').textContent = 'Carga de expediente digital para sede manual: adjunte PDF y fotografías de soporte.';
+  }
+  function closeElecExpedienteModal(){
+    qs('elecExpedienteModal')?.classList.remove('open');
+  }
+  function elecExpedientePdfChosen(){
+    const file = qs('elecExpedientePdfInput').files?.[0];
+    elecExpedientePdfFile = file || null;
+    renderElecExpedienteFileList();
+    qs('elecExpedienteStatusMsg').textContent = file
+      ? `PDF listo: ${file.name}. Puede agregar fotografías antes de registrar.`
+      : 'Seleccione el PDF del expediente digital.';
+  }
+  function elecExpedientePhotosChosen(){
+    const files = Array.from(qs('elecExpedientePhotosInput').files || []);
+    elecExpedientePhotos = files;
+    renderElecExpedienteFileList();
+    qs('elecExpedienteStatusMsg').textContent = files.length
+      ? `${files.length} fotografía(s) seleccionada(s). Verifique el PDF antes de registrar.`
+      : 'Seleccione una o más fotografías de soporte.';
+  }
+  function submitElecExpediente(){
+    const code = qs('elecExpedienteCode').value.trim();
+    const district = qs('elecExpedienteDistrict').value.trim();
+    const tipo = qs('elecExpedienteTipo');
+    const tipoLabel = tipo.options[tipo.selectedIndex]?.text || 'Sede manual';
+    if(!code || !district){
+      qs('elecExpedienteStatusMsg').textContent = 'Indique código de sede y distrito/localidad.';
+      return;
+    }
+    if(!elecExpedientePdfFile){
+      qs('elecExpedienteStatusMsg').textContent = 'Debe adjuntar el PDF del expediente digital.';
+      return;
+    }
+    const photoCount = elecExpedientePhotos.length;
+    qs('elecExpedienteStatusMsg').textContent = `Expediente registrado para ${code} (${district}) · ${tipoLabel} · 1 PDF · ${photoCount} foto(s).`;
+    qs('mapInfo').textContent = `Expediente digital cargado: ${code} · ${district} · PDF ${elecExpedientePdfFile.name}${photoCount ? ` · ${photoCount} foto(s)` : ''}.`;
+    const meta = qs('elecExpedienteMeta');
+    if(meta){
+      meta.textContent = `Última carga: ${code} · ${district} · ${elecExpedientePdfFile.name}${photoCount ? ` + ${photoCount} foto(s)` : ''}`;
+    }
+  }
+  function openElecReportModal(){
+    const ctx = getElecReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'Seleccione un beneficiario o una selección circular antes de generar el reporte.';
+      return;
+    }
+    const fin = elecReportTotals(ctx.panels);
+    qs('elecReportModalMode').textContent = ctx.mode;
+    qs('elecReportModalCount').textContent = String(ctx.panels.length);
+    qs('elecReportModalRef').textContent = ctx.label;
+    qs('elecReportModalConexion').textContent = elecMoney(fin.conexion);
+    qs('elecReportModalTotal').textContent = elecMoney(fin.total);
+    qs('elecReportModalKw').textContent = fin.kw.toFixed(2);
+    qs('elecReportModalStatus').textContent = 'El reporte incluirá ficha técnica, ubicación, tipo de conexión, comprobante y montos de compensación SEAL.';
+    qs('elecReportModal').classList.add('open');
+  }
+  function closeElecReportModal(){
+    qs('elecReportModal')?.classList.remove('open');
+  }
+  function exportElecReportXlsx(){
+    const ctx = getElecReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'No hay beneficiario seleccionado para generar el reporte.';
+      return;
+    }
+    if(!window.XLSX){
+      qs('mapInfo').textContent = 'Librería Excel no disponible. Verifique la conexión e intente nuevamente.';
+      return;
+    }
+    const now = new Date().toLocaleString('es-PE');
+    const fin = elecReportTotals(ctx.panels);
+    const wb = XLSX.utils.book_new();
+    const cover = [
+      ['REPORTE OPERATIVO · ELECTRICIDAD AL TOQUE'],
+      ['Módulo', 'Programa Electricidad al Toque · SATCONTROL'],
+      ['Empresa', 'Sociedad Eléctrica del Sur Oeste S.A. - SEAL'],
+      ['Modo de selección', ctx.mode],
+      ['Referencia', ctx.label],
+      ['Fecha de generación', now],
+      ['Total registros', ctx.panels.length],
+      ['Total conexión (S/)', fin.conexion],
+      ['Total compensación (S/)', fin.total],
+      ['Potencia conectada total (kW)', fin.kw]
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cover), 'Portada');
+    const summaryRows = [
+      ['Total beneficiarios', ctx.panels.length],
+      ['Instalación', ctx.panels.filter(p => p.status === 'operativo').length],
+      ['Finalizados', ctx.panels.filter(p => p.status === 'observado').length],
+      ['Liquidados', ctx.panels.filter(p => p.status === 'inactivo').length],
+      ['Conexión subterránea', ctx.panels.filter(p => String(p.tipoConexion).toLowerCase().includes('sub')).length],
+      ['Conexión aérea', ctx.panels.filter(p => !String(p.tipoConexion).toLowerCase().includes('sub')).length],
+      ['Total conexión (S/)', fin.conexion],
+      ['Total compensación (S/)', fin.total],
+      ['Potencia conectada (kW)', fin.kw]
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Indicador', 'Valor'], ...summaryRows]), 'Resumen');
+    const compHeaders = ['Código', 'Estado', 'Empresa', 'Tipo conexión', 'N° hilos', 'Potencia kW', 'Comprobante', 'Conexión (S/)', 'Rotura vereda (S/)', 'Murete (S/)', 'Mástil (S/)', 'Total (S/)', 'Fecha emisión'];
+    const compRows = ctx.panels.map(panel => [
+      panel.code, panel.statusLabel, panel.empresa, panel.tipoConexion, panel.numeroHilos, panel.potenciaConectada,
+      panel.comprobanteN, parseNumeric(panel.conexionMonto), parseNumeric(panel.roturaVereda), parseNumeric(panel.murete),
+      parseNumeric(panel.mastil), parseNumeric(panel.totalMonto), panel.fechaEmision
+    ]);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([compHeaders, ...compRows]), 'Compensaciones');
+    const detailHeaders = ['Código', 'Estado', 'Departamento', 'Provincia', 'Distrito', 'Reporte Depto', 'Reporte Prov', 'Reporte Dist', 'Latitud', 'Longitud', 'Tipo conexión', 'Comprobante', 'Conexión (S/)', 'Total (S/)', 'Observación'];
+    const detailRows = ctx.panels.map(panel => [
+      panel.code, panel.statusLabel, panel.department, panel.province, panel.district,
+      panel.reporteDepartamento, panel.reporteProvincia, panel.reporteDistrito,
+      panel.latitude, panel.longitude, panel.tipoConexion, panel.comprobanteN,
+      parseNumeric(panel.conexionMonto), parseNumeric(panel.totalMonto), panel.observation
+    ]);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([detailHeaders, ...detailRows]), 'Detalle técnico');
+    XLSX.writeFile(wb, `Reporte_Electricidad_al_Toque_${elecReportFileToken(ctx)}.xlsx`);
+    closeElecReportModal();
+    qs('mapInfo').textContent = `Reporte Electricidad al Toque generado en Excel (.xlsx) para ${ctx.label}.`;
+  }
+  function exportElecReportPdf(){
+    const ctx = getElecReportContext();
+    if(!ctx){
+      qs('mapInfo').textContent = 'No hay beneficiario seleccionado para generar el reporte.';
+      return;
+    }
+    const { jsPDF } = window.jspdf || {};
+    if(!jsPDF){
+      qs('mapInfo').textContent = 'Librería PDF no disponible. Verifique la conexión e intente nuevamente.';
+      return;
+    }
+    const now = new Date().toLocaleString('es-PE');
+    const fin = elecReportTotals(ctx.panels);
+    const landscape = ctx.panels.length > 1;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: landscape ? 'landscape' : 'portrait' });
+    const pageW = doc.internal.pageSize.getWidth();
+    doc.setFillColor(14, 116, 144);
+    doc.rect(0, 0, pageW, 64, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15);
+    doc.text('Electricidad al Toque · SATCONTROL', 40, 28);
+    doc.setFontSize(10);
+    doc.text('Reporte operativo de conexiones y compensaciones · SEAL Arequipa', 40, 46);
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.text(`${ctx.mode} · ${ctx.label} · ${ctx.panels.length} registro(s) · ${now}`, 40, 84);
+    doc.text(`Conexión: ${elecMoney(fin.conexion)} · Total compensación: ${elecMoney(fin.total)} · Potencia: ${fin.kw.toFixed(2)} kW`, 40, 98);
+    const head = [['Código', 'Estado', 'Tipo', 'Conexión', 'Total', 'kW']];
+    const body = ctx.panels.map(panel => [
+      panel.code,
+      panel.statusLabel,
+      panel.tipoConexion,
+      elecMoney(parseNumeric(panel.conexionMonto)),
+      elecMoney(parseNumeric(panel.totalMonto)),
+      panel.potenciaConectada
+    ]);
+    doc.autoTable({
+      head,
+      body,
+      startY: 112,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 5 },
+      headStyles: { fillColor: [14, 116, 144], textColor: [255, 255, 255] }
+    });
+    let y = doc.lastAutoTable.finalY + 18;
+    ctx.panels.slice(0, landscape ? 3 : 2).forEach(panel => {
+      if(y > doc.internal.pageSize.getHeight() - 120){
+        doc.addPage();
+        y = 40;
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Detalle · ${panel.code}`, 40, y);
+      y += 14;
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      const lines = [
+        `Ubicación: ${panel.department} · ${panel.province} · ${panel.district}`,
+        `Reporte geo: ${panel.reporteDepartamento} · ${panel.reporteProvincia} · ${panel.reporteDistrito}`,
+        `Coordenadas: ${formatCoord(panel.latitude)}, ${formatCoord(panel.longitude)}`,
+        `Empresa: ${panel.empresa}`,
+        `Tipo conexión: ${panel.tipoConexion} · Hilos: ${panel.numeroHilos} · Potencia: ${panel.potenciaConectada} kW`,
+        `Comprobante N° ${panel.comprobanteN} · Emisión: ${panel.fechaEmision}`,
+        `Montos: conexión ${elecMoney(parseNumeric(panel.conexionMonto))} · total ${elecMoney(parseNumeric(panel.totalMonto))}`,
+        `Observación: ${panel.observation}`
+      ];
+      lines.forEach(line => {
+        doc.text(line, 40, y, { maxWidth: pageW - 80 });
+        y += 12;
+      });
+      y += 8;
+    });
+    doc.save(`Reporte_Electricidad_al_Toque_${elecReportFileToken(ctx)}.pdf`);
+    closeElecReportModal();
+    qs('mapInfo').textContent = `Reporte Electricidad al Toque generado en PDF (.pdf) para ${ctx.label}.`;
+  }
+  let selectionMarker = null;
+  function selectPanel(index, pan = false){
+    clearCircularSelection();
+    selectedIndex = index;
+    const panel = buildPanel(index);
+    qs('panelTitle').textContent = panel.code;
+    qs('panelSubtitle').innerHTML = `${panel.department} · ${panel.province} · ${panel.district} &nbsp; ${statusBadge(statusCodes[index])}`;
+    qs('selectionHint').textContent = `${panel.code} seleccionado en ${panel.department}. Se ha cargado la ficha técnica y la evidencia fotográfica en el panel derecho.`;
+    qs('toolHint').style.display = mapTool === 'circle' ? 'none' : '';
+    if(mapTool !== 'circle') qs('toolHint').textContent = 'Modo actual: selección individual de beneficiarios.';
+    qs('detailsTitle').textContent = 'Información del beneficiario seleccionado';
+    qs('selectionModeBadge').textContent = 'Individual';
+    qs('summaryCard').style.display = 'none';
+    qs('evidenceSingleWrap').style.display = 'block';
+    qs('evidenceGallery').style.display = 'none';
+    qs('evidenceSubtitle').textContent = 'Caja, medidor, interruptor, predio y DNI';
+    qs('evidenceCountBadge').textContent = '1/5';
+    qs('panelDetails').innerHTML = `
+      <div class="detail-row"><span>Código</span><b>${panel.code}</b></div>
+      <div class="detail-row"><span>Estado del trámite</span><b>${panel.statusLabel}</b></div>
+      <div class="detail-row"><span>Departamento</span><b>${panel.department}</b></div>
+      <div class="detail-row"><span>Provincia</span><b>${panel.province}</b></div>
+      <div class="detail-row"><span>Distrito</span><b>${panel.district}</b></div>
+      <div class="detail-row"><span>Coordenadas</span><b>${formatCoord(panel.latitude)}, ${formatCoord(panel.longitude)}</b></div>
+      <div class="detail-row"><span>Tecnología</span><b>${panel.technology}</b></div>
+      <div class="detail-row"><span>Capacidad</span><b>${panel.capacity}</b></div>
+      <div class="detail-row"><span>Inversor</span><b>${panel.inverter}</b></div>
+      <div class="detail-row"><span>Batería</span><b>${panel.battery}</b></div>
+      <div class="detail-row"><span>Instalación</span><b>${panel.installationDate}</b></div>
+      <div class="detail-row"><span>Último mantenimiento</span><b>${panel.maintenanceDate}</b></div>
+      <div class="detail-row"><span>Sincronización</span><b>${panel.sync}</b></div>
+      <div class="detail-row"><span>OPEX</span><b>${panel.opex}</b></div>
+      <div class="detail-row"><span>Observación</span><b>${panel.observation}</b></div>`;
+    setElectricEvidenceCarousel(panel);
+    qs('mapInfo').textContent = `Seleccionado ${panel.code} · ${panel.statusLabel} · ${panel.department}. El panel derecho muestra toda la información del beneficiario Electricidad al Toque y su evidencia.`;
+    solarLayer.setSelected(index);
+    if(selectionMarker){ map.removeLayer(selectionMarker); }
+    const html = `<div class="panel-icon-marker" style="background:${statusCodes[index]===0?'#f59e0b':statusCodes[index]===1?'#22c55e':'#3b82f6'}"></div>`;
+    selectionMarker = L.marker([panel.latitude, panel.longitude], {icon:L.divIcon({className:'', html, iconSize:[14,10], iconAnchor:[7,5]})}).addTo(map);
+    selectionMarker.bindPopup(`<b>${panel.code}</b><br>${panel.department} · ${panel.district}<br>Estado del trámite: ${panel.statusLabel}`).openPopup();
+    if(pan) map.panTo([panel.latitude, panel.longitude]);
+    updateElecReportStatus();
+  }
+
+  function findCodeIndex(text){
+    const match = String(text || '').trim().match(/EAT-(\d{1,6})/i);
+    if(!match) return -1;
+    const idx = parseInt(match[1], 10) - 1;
+    return (idx >= 0 && idx < TOTAL_PANELS) ? idx : -1;
+  }
+
+  function applyFilters(){
+    const filter = qs('statusFilter').value;
+    showState.operativo = true;
+    showState.observado = true;
+    showState.inactivo = true;
+    if(filter !== 'all'){
+      showState.operativo = filter === 'operativo';
+      showState.observado = filter === 'observado';
+      showState.inactivo = filter === 'inactivo';
+    }
+    solarLayer.redraw();
+  }
+
+  function renderDisbursementHeat(){
+    disbursementHeatLayer.clearLayers();
+    if(!disbursementHeatVisible) return;
+    for(let i=0;i<TOTAL_PANELS;i+=10){
+      const amount=18000+((i*7919)%128000);
+      const intensity=Math.min(1,amount/146000);
+      const color=intensity>.68?'#ef4444':intensity>.36?'#f59e0b':'#22c55e';
+      const lat=latitudes[i],lng=longitudes[i];
+      [[38,.08],[26,.13],[15,.22]].forEach(([radius,opacity])=>{
+        L.circleMarker([lat,lng],{radius,stroke:false,fillColor:color,fillOpacity:opacity,interactive:false}).addTo(disbursementHeatLayer);
+      });
+      L.circleMarker([lat,lng],{radius:6,weight:1,color:'#fff',fillColor:color,fillOpacity:.82})
+        .bindTooltip(`<b>Zona ${Math.floor(i/10)+1}</b><br>Monto desembolsado: S/ ${amount.toLocaleString('es-PE')}`)
+        .addTo(disbursementHeatLayer);
+    }
+  }
+
+  function toggleLayersPanel(forceOpen = null){
+    const panel = qs('inventoryPanel');
+    const shouldOpen = forceOpen === null ? !panel.classList.contains('open') : !!forceOpen;
+    panel.classList.toggle('open', shouldOpen);
+    if(qs('toggleLayersBtn')) qs('toggleLayersBtn').classList.toggle('active', shouldOpen);
+    if(qs('toggleInventoryInfo')) qs('toggleInventoryInfo').classList.toggle('active', shouldOpen);
+    if(shouldOpen){
+      qs('mapInfo').textContent = 'Panel de capas abierto. Aquí puedes activar beneficiarios, estados operativos y otras capas temáticas del mapa.';
+    }
+    return shouldOpen;
+  }
+
+  qs('refreshBtn').addEventListener('click', () => {
+    generatePanelPoints(Date.now() % 1000000);
+    generateBeneficiaries();
+    generateNoElectricityHomes();
+    generateConcessionAreas();
+    solarLayer.redraw();
+    renderBeneficiaryLayer();
+    renderNoElectricityHomesLayer();
+    renderConcessionsLayer();
+    selectPanel(Math.floor(Math.random() * TOTAL_PANELS));
+  });
+  qs('statusFilter').addEventListener('change', applyFilters);
+  qs('showDisbursementHeat').addEventListener('change', (e) => {
+    disbursementHeatVisible=e.target.checked;
+    overlayVisible=disbursementHeatVisible ? false : qs('togglePanelPoints').checked;
+    solarLayer.redraw();
+    renderDisbursementHeat();
+    qs('mapInfo').textContent=disbursementHeatVisible
+      ? 'Mapa de calor activo: montos desembolsados acumulados por zona. Los beneficiarios se ocultan temporalmente.'
+      : 'Mapa de calor desactivado. Se restableció la capa de beneficiarios.';
+  });
+  qs('zoomPeruBtn').addEventListener('click', () => fitPeruOverview(true));
+  qs('randomSelectBtn').addEventListener('click', () => selectPanel(Math.floor(Math.random() * TOTAL_PANELS), true));
+  qs('dniSuministroSearchBtn')?.addEventListener('click', searchByDniOrSuministro);
+  qs('dniSuministroSearch')?.addEventListener('keydown', e => { if(e.key === 'Enter') searchByDniOrSuministro(); });
+  qs('baseOsmBtn').addEventListener('click', () => { if(map.hasLayer(baseTopo)) map.removeLayer(baseTopo); if(!map.hasLayer(baseOSM)) map.addLayer(baseOSM); qs('baseOsmBtn').classList.add('active'); qs('baseSatBtn').classList.remove('active'); });
+  qs('baseSatBtn').addEventListener('click', () => { if(map.hasLayer(baseOSM)) map.removeLayer(baseOSM); if(!map.hasLayer(baseTopo)) map.addLayer(baseTopo); qs('baseSatBtn').classList.add('active'); qs('baseOsmBtn').classList.remove('active'); });
+  qs('togglePanelPoints').addEventListener('change', (e) => {
+    if(e.target.checked && disbursementHeatVisible){
+      disbursementHeatVisible=false;
+      qs('showDisbursementHeat').checked=false;
+      disbursementHeatLayer.clearLayers();
+    }
+    overlayVisible=e.target.checked;
+    solarLayer.redraw();
+    qs('mapInfo').textContent=overlayVisible?'Capa de beneficiarios activa.':'Capa de beneficiarios oculta.';
+  });
+  qs('prepareMapSelectionBtn').addEventListener('click', () => {
+    qs('mapasDetails')?.removeAttribute('open');
+    qs('layersDetails')?.removeAttribute('open');
+    qs('thematicDetails')?.removeAttribute('open');
+    qs('utilSelect')?.click();
+    selectedIndex = null;
+    qs('panelTitle').textContent = 'Ficha del beneficiario Electricidad al Toque';
+    qs('panelSubtitle').textContent = 'Selecciona un punto del mapa para ver el detalle completo';
+    qs('mapInfo').textContent = 'Panel derecho limpio. Haz clic en un beneficiario del mapa para preparar una nueva selección.';
+  });
+  qs('utilSelect').addEventListener('click', () => {
+    mapTool = 'select';
+    map.doubleClickZoom.enable();
+    setActiveUtil('utilSelect');
+    closePinModal();
+    clearCircularSelection();
+    qs('toolHint').style.display = '';
+    qs('toolHint').textContent = 'Modo actual: selección individual de beneficiarios.';
+    qs('mapInfo').textContent = 'Modo seleccionar activo. Haz clic en cualquier panel para ver su ficha técnica y evidencia.';
+    if(selectedIndex !== null && selectedIndex !== undefined) selectPanel(selectedIndex, false);
+  });
+  qs('utilCircle').addEventListener('click', () => {
+    mapTool = 'circle';
+    map.doubleClickZoom.disable();
+    setActiveUtil('utilCircle');
+    clearCircularSelection();
+    circleDraftActive = false;
+    qs('toolHint').style.display = 'none';
+    qs('mapInfo').textContent = 'Selección circular activa: haga clic para marcar el centro, mueva el cursor para definir el radio y cierre con doble clic.';
+  });
+  qs('utilFit').addEventListener('click', () => {
+    mapTool = 'select';
+    map.doubleClickZoom.enable();
+    qs('toolHint').style.display = '';
+    setActiveUtil('utilFit');
+    closePinModal();
+    fitPeruOverview(true);
+    qs('mapInfo').textContent = 'Vista reajustada al territorio continental del Perú.';
+  });
+  qs('utilRandom').addEventListener('click', () => {
+    mapTool = 'select';
+    map.doubleClickZoom.enable();
+    qs('toolHint').style.display = '';
+    setActiveUtil('utilRandom');
+    closePinModal();
+    selectPanel(Math.floor(Math.random() * TOTAL_PANELS), true);
+  });
+  qs('utilPin').addEventListener('click', () => {
+    mapTool = 'pin';
+    map.doubleClickZoom.enable();
+    qs('toolHint').style.display = '';
+    setActiveUtil('utilPin');
+    qs('toolHint').textContent = 'Modo actual: tachuela. Haz clic en el mapa para capturar latitud y longitud y completar la ficha técnica.';
+    qs('mapInfo').textContent = 'Herramienta de tachuela activa. Haz clic en el mapa para registrar un nuevo punto Electricidad al Toque.';
+  });
+
+  qs('closePinModalBtn').addEventListener('click', closePinModal);
+  qs('savePinDraftBtn').addEventListener('click', savePinDraft);
+  qs('sendPinBtn').addEventListener('click', sendPinForSupervision);
+  qs('pinModal').addEventListener('click', (e) => { if(e.target.id === 'pinModal') closePinModal(); });
+
+  qs('closeDgerModalBtn').addEventListener('click', closeDgerModal);
+  qs('closeDgerFooterBtn').addEventListener('click', closeDgerModal);
+  qs('selectDgerFileBtn').addEventListener('click', () => qs('dgerExcelInput').click());
+  qs('dgerExcelInput').addEventListener('change', dgerFileChosen);
+  qs('processDgerBtn').addEventListener('click', processDgerExcel);
+  qs('dgerModal').addEventListener('click', (e) => { if(e.target.id === 'dgerModal') closeDgerModal(); });
+
+  qs('utilAnexo4').addEventListener('click', openAnexo4Modal);
+  qs('closeAnexo4ModalBtn').addEventListener('click', closeAnexo4Modal);
+  qs('closeAnexo4FooterBtn').addEventListener('click', closeAnexo4Modal);
+  qs('selectAnexo4FileBtn').addEventListener('click', () => qs('anexo4ExcelInput').click());
+  qs('anexo4ExcelInput').addEventListener('change', anexo4FileChosen);
+  qs('validateAnexo4Btn').addEventListener('click', validateAnexo4AgainstFicef);
+  qs('generateAnexo4ReportBtn').addEventListener('click', generateAnexo4Report);
+  qs('anexo4Modal').addEventListener('click', (e) => { if(e.target.id === 'anexo4Modal') closeAnexo4Modal(); });
+
+  qs('elecReportOpenBtn')?.addEventListener('click', openElecReportModal);
+  qs('closeElecReportModalBtn')?.addEventListener('click', closeElecReportModal);
+  qs('elecReportXlsxBtn')?.addEventListener('click', exportElecReportXlsx);
+  qs('elecReportPdfBtn')?.addEventListener('click', exportElecReportPdf);
+  qs('elecReportModal')?.addEventListener('click', e => { if(e.target.id === 'elecReportModal') closeElecReportModal(); });
+
+  qs('elecExpedienteOpenBtn')?.addEventListener('click', openElecExpedienteModal);
+  qs('closeElecExpedienteModalBtn')?.addEventListener('click', closeElecExpedienteModal);
+  qs('closeElecExpedienteFooterBtn')?.addEventListener('click', closeElecExpedienteModal);
+  qs('selectElecExpedientePdfBtn')?.addEventListener('click', () => qs('elecExpedientePdfInput').click());
+  qs('selectElecExpedientePhotosBtn')?.addEventListener('click', () => qs('elecExpedientePhotosInput').click());
+  qs('elecExpedientePdfInput')?.addEventListener('change', elecExpedientePdfChosen);
+  qs('elecExpedientePhotosInput')?.addEventListener('change', elecExpedientePhotosChosen);
+  qs('submitElecExpedienteBtn')?.addEventListener('click', submitElecExpediente);
+  qs('elecExpedienteModal')?.addEventListener('click', e => { if(e.target.id === 'elecExpedienteModal') closeElecExpedienteModal(); });
+
+  const app = document.querySelector('.app');
+  const content = document.querySelector('.content');
+  qs('toggleSidebarBtn').addEventListener('click', () => {
+    app.classList.toggle('sidebar-hidden');
+    resizeMapAfterLayout();
+  });
+  qs('hideLeftPanelBtn').addEventListener('click', () => {
+    content.classList.add('left-hidden');
+    resizeMapAfterLayout();
+  });
+  qs('showLeftPanelBtn').addEventListener('click', () => {
+    content.classList.remove('left-hidden');
+    resizeMapAfterLayout();
+  });
+  qs('hideRightPanelBtn').addEventListener('click', () => {
+    content.classList.add('right-hidden');
+    resizeMapAfterLayout();
+  });
+  qs('showRightPanelBtn').addEventListener('click', () => {
+    content.classList.remove('right-hidden');
+    resizeMapAfterLayout();
+  });
+  content.addEventListener('transitionend', (e) => {
+    if(e.target === content && (e.propertyName === 'grid-template-columns' || e.propertyName === 'gap')) resizeMapAfterLayout();
+  });
+
+  generatePanelPoints();
+  generateBeneficiaries();
+  generateNoElectricityHomes();
+  generateConcessionAreas();
+  applyFilters();
+  window.selectBeneficiary = selectBeneficiary;
+  selectPanel(0, false);
+  map.closePopup();
+  fitPeruOverview(false);
+  updateElecExpedienteStatus();
+  setTimeout(() => {
+    map.invalidateSize();
+    fitPeruOverview(false);
+  }, 180);
+})();
+</script>
+</body>
+</html>
+
