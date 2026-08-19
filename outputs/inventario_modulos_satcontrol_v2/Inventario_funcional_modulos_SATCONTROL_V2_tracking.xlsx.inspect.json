@@ -1,0 +1,29 @@
+{
+  "ndjson": "{\"kind\":\"table\",\"sheet\":\"Tracking V2\",\"address\":\"A1:I16\",\"rows\":16,\"cols\":9,\"values\":[[\"TRACKING FUNCIONAL SATCONTROL · VERSIÓN 2\",null,null,null,null,null,null,null,null],[\"Versión 2 en planificación · estructura preparada para registrar decisiones, responsables y avance\",null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null],[\"Versión base\",null,\"Versión objetivo\",null,\"Estado general\",null,\"Avance general\",null,\"Actualizado\"],[\"V1 operativa\",null,\"V2\",null,\"En planificación\",null,0,null,\"2026-08-07T05:00:00.000Z\"],[null,null,null,null,null,null,null,null,null],[\"ID\",\"Módulo\",\"Componente / mejora V2\",\"Estado\",\"Avance\",\"Prioridad\",\"Responsable\",\"Fecha objetivo\",\"Observaciones\"],[\"V2-001\",\"Vale FISE\",\"Definir y validar el alcance funcional de la versión 2\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Se conserva V1 como referencia funcional.\"],[\"V2-002\",\"Ahorro GNV\",\"Definir mejoras de seguimiento territorial y operativo\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-003\",\"BonoGas\",\"Definir mejoras de monitoreo, plazos y sincronización\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-004\",\"Masificación\",\"Definir mejoras GIS, proyectos y trazabilidad\",\"Pendiente de definir\",0,\"Alta\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-005\",\"Electricidad al Toque\",\"Definir mejoras de beneficiarios, evidencias y estados\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-006\",\"MCTER\",\"Definir mejoras de beneficiarios, resoluciones y desembolsos\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-007\",\"Fotovoltaico\",\"Definir mejoras de inventario y procesamiento DGER\",\"Pendiente de definir\",0,\"Media\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-008\",\"Administrador\",\"Definir mejoras de usuarios, perfiles y permisos\",\"Pendiente de definir\",0,\"Alta\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"],[\"V2-009\",\"Acceso y Mis Apps\",\"Definir mejoras de autenticación y accesos\",\"Pendiente de definir\",0,\"Alta\",\"Por asignar\",null,\"Contenido V2 pendiente de validación.\"]]}",
+  "truncated": false,
+  "metadata": {
+    "revision": "blpn49",
+    "target": {
+      "id": "wb/6phi0b",
+      "beforeLines": 0,
+      "afterLines": 0
+    },
+    "kind": {
+      "requested": "table",
+      "tokens": [
+        "table"
+      ]
+    },
+    "include": {
+      "requested": "values,formulas",
+      "tokens": [
+        "values",
+        "formulas"
+      ]
+    },
+    "exclude": {
+      "tokens": []
+    },
+    "notices": []
+  }
+}
